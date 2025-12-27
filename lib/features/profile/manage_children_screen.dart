@@ -202,32 +202,6 @@ class ManageChildrenScreen extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: () => Navigator.of(context).pushNamed('/profile', arguments: {'student': child}),
-                  icon: const Icon(Icons.chevron_left, size: 16),
-                  label: Text(
-                    'عرض الملف',
-                    style: AppTheme.tajawal(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: AppTheme.primaryBlue,
-                    side: const BorderSide(color: AppTheme.primaryBlue),
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
         ],
       ),
     );

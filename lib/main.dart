@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 import 'features/auth/splash_screen.dart';
 import 'features/auth/login_screen.dart';
 import 'features/home/main_layout.dart';
-import 'features/profile/student_profile_screen.dart';
 import 'features/profile/parent_profile_screen.dart';
 import 'features/profile/manage_children_screen.dart';
 import 'features/settings/settings_screen.dart';
@@ -14,14 +15,38 @@ import 'features/notifications/notifications_screen.dart';
 import 'features/settings/terms_and_conditions_screen.dart';
 import 'features/settings/about_app_screen.dart';
 import 'core/theme/app_theme.dart';
+import 'core/services/notification_service.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
   // Set preferred orientations
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
+  
+  // Initialize Firebase
+  try {
+    print('🔥 [FIREBASE] Initializing Firebase...');
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    print('✅ [FIREBASE] Firebase initialized successfully');
+    
+    // Wait a bit to ensure Firebase is fully ready
+    await Future.delayed(const Duration(milliseconds: 500));
+    
+    // Initialize notification service
+    print('🔔 [NOTIFICATION] Initializing notification service...');
+    await NotificationService().initialize();
+    print('✅ [NOTIFICATION] Notification service initialized');
+  } catch (e, stackTrace) {
+    print('❌ [FIREBASE] Error initializing Firebase: $e');
+    print('❌ [FIREBASE] Stack trace: $stackTrace');
+    // Continue app launch even if Firebase fails
+  }
+  
   runApp(const MyApp());
 }
 
@@ -51,10 +76,6 @@ class MyApp extends StatelessWidget {
         '/main': (context) {
           final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
           return MainLayout(student: args?['student']);
-        },
-        '/profile': (context) {
-          final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
-          return StudentProfileScreen(student: args?['student']);
         },
         '/parentProfile': (context) => const ParentProfileScreen(),
         '/manageChildren': (context) => const ManageChildrenScreen(),

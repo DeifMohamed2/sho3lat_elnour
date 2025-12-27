@@ -6,13 +6,7 @@ class ParentProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final parentData = {
-      'name': 'أحمد محمد العلي',
-      'avatar': '👨‍💼',
-      'phone': '+966 50 123 4567',
-      'email': 'ahmed.ali@email.com',
-      'parentCode': 'P-2024-1573',
-    };
+    final parentData = {'name': 'أحمد محمد العلي', 'phone': '+966 50 123 4567'};
 
     return Directionality(
       textDirection: TextDirection.rtl,
@@ -37,7 +31,10 @@ class ParentProfileScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.arrow_back_ios, color: AppTheme.gray600),
+                    icon: const Icon(
+                      Icons.arrow_back_ios,
+                      color: AppTheme.gray600,
+                    ),
                     onPressed: () => Navigator.of(context).pop(),
                   ),
                   Text(
@@ -73,49 +70,6 @@ class ParentProfileScreen extends StatelessWidget {
                       ),
                       child: Column(
                         children: [
-                          Stack(
-                            children: [
-                              Container(
-                                width: 96,
-                                height: 96,
-                                decoration: BoxDecoration(
-                                  gradient: const LinearGradient(
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                    colors: [AppTheme.primaryBlue, AppTheme.primaryBlueDark],
-                                  ),
-                                  shape: BoxShape.circle,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.1),
-                                      blurRadius: 10,
-                                      offset: const Offset(0, 2),
-                                    ),
-                                  ],
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    parentData['avatar'] as String,
-                                    style: const TextStyle(fontSize: 48),
-                                  ),
-                                ),
-                              ),
-                              Positioned(
-                                bottom: 0,
-                                right: 0,
-                                child: Container(
-                                  width: 32,
-                                  height: 32,
-                                  decoration: BoxDecoration(
-                                    color: AppTheme.primaryBlue.withOpacity(0.1),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: const Icon(Icons.edit, color: AppTheme.primaryBlue, size: 16),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 16),
                           Text(
                             parentData['name'] as String,
                             style: AppTheme.tajawal(
@@ -138,20 +92,6 @@ class ParentProfileScreen extends StatelessWidget {
                             'رقم الهاتف',
                             parentData['phone'] as String,
                             Colors.blue,
-                          ),
-                          const SizedBox(height: 12),
-                          _buildContactInfo(
-                            Icons.email,
-                            'البريد الإلكتروني',
-                            parentData['email'] as String,
-                            Colors.purple,
-                          ),
-                          const SizedBox(height: 12),
-                          _buildContactInfo(
-                            Icons.badge,
-                            'رمز ولي الأمر',
-                            parentData['parentCode'] as String,
-                            Colors.green,
                           ),
                         ],
                       ),
@@ -179,7 +119,11 @@ class ParentProfileScreen extends StatelessWidget {
                             children: [
                               Row(
                                 children: [
-                                  const Icon(Icons.people, color: AppTheme.primaryBlue, size: 20),
+                                  const Icon(
+                                    Icons.people,
+                                    color: AppTheme.primaryBlue,
+                                    size: 20,
+                                  ),
                                   const SizedBox(width: 8),
                                   Text(
                                     'الأبناء',
@@ -192,7 +136,10 @@ class ParentProfileScreen extends StatelessWidget {
                                 ],
                               ),
                               TextButton(
-                                onPressed: () => Navigator.of(context).pushNamed('/manageChildren'),
+                                onPressed:
+                                    () => Navigator.of(
+                                      context,
+                                    ).pushNamed('/manageChildren'),
                                 child: Text(
                                   'إدارة الكل',
                                   style: AppTheme.tajawal(
@@ -204,31 +151,49 @@ class ParentProfileScreen extends StatelessWidget {
                             ],
                           ),
                           const SizedBox(height: 16),
-                          _buildChildCard('محمد أحمد العلي', 'الصف الخامس', '5-أ', '👦', () {
-                            Navigator.of(context).pushReplacementNamed('/main', arguments: {
-                              'student': {
-                                'id': 1,
-                                'name': 'محمد أحمد العلي',
-                                'grade': 'الصف الخامس',
-                                'class': '5-أ',
-                                'avatar': '👦',
-                                'studentId': 'STD-2024-1234'
-                              }
-                            });
-                          }),
+                          _buildChildCard(
+                            'محمد أحمد العلي',
+                            'الصف الخامس',
+                            '5-أ',
+                            '👦',
+                            () {
+                              Navigator.of(context).pushReplacementNamed(
+                                '/main',
+                                arguments: {
+                                  'student': {
+                                    'id': 1,
+                                    'name': 'محمد أحمد العلي',
+                                    'grade': 'الصف الخامس',
+                                    'class': '5-أ',
+                                    'avatar': '👦',
+                                    'studentId': 'STD-2024-1234',
+                                  },
+                                },
+                              );
+                            },
+                          ),
                           const SizedBox(height: 12),
-                          _buildChildCard('فاطمة أحمد العلي', 'الصف الثاني', '2-ب', '👧', () {
-                            Navigator.of(context).pushReplacementNamed('/main', arguments: {
-                              'student': {
-                                'id': 2,
-                                'name': 'فاطمة أحمد العلي',
-                                'grade': 'الصف الثاني',
-                                'class': '2-ب',
-                                'avatar': '👧',
-                                'studentId': 'STD-2024-5678'
-                              }
-                            });
-                          }),
+                          _buildChildCard(
+                            'فاطمة أحمد العلي',
+                            'الصف الثاني',
+                            '2-ب',
+                            '👧',
+                            () {
+                              Navigator.of(context).pushReplacementNamed(
+                                '/main',
+                                arguments: {
+                                  'student': {
+                                    'id': 2,
+                                    'name': 'فاطمة أحمد العلي',
+                                    'grade': 'الصف الثاني',
+                                    'class': '2-ب',
+                                    'avatar': '👧',
+                                    'studentId': 'STD-2024-5678',
+                                  },
+                                },
+                              );
+                            },
+                          ),
                         ],
                       ),
                     ),
@@ -259,9 +224,23 @@ class ParentProfileScreen extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(height: 16),
-                          _buildQuickAction(Icons.people, 'إدارة الأبناء', () => Navigator.of(context).pushNamed('/manageChildren')),
-                          _buildQuickAction(Icons.settings, 'الإعدادات', () => Navigator.of(context).pushNamed('/settings')),
-                          _buildQuickAction(Icons.info_outline, 'حول التطبيق', () => Navigator.of(context).pushNamed('/aboutApp')),
+                          _buildQuickAction(
+                            Icons.people,
+                            'إدارة الأبناء',
+                            () => Navigator.of(
+                              context,
+                            ).pushNamed('/manageChildren'),
+                          ),
+                          _buildQuickAction(
+                            Icons.settings,
+                            'الإعدادات',
+                            () => Navigator.of(context).pushNamed('/settings'),
+                          ),
+                          _buildQuickAction(
+                            Icons.info_outline,
+                            'حول التطبيق',
+                            () => Navigator.of(context).pushNamed('/aboutApp'),
+                          ),
                         ],
                       ),
                     ),
@@ -275,7 +254,12 @@ class ParentProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildContactInfo(IconData icon, String label, String value, Color iconColor) {
+  Widget _buildContactInfo(
+    IconData icon,
+    String label,
+    String value,
+    Color iconColor,
+  ) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -322,7 +306,13 @@ class ParentProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildChildCard(String name, String grade, String className, String avatar, VoidCallback onTap) {
+  Widget _buildChildCard(
+    String name,
+    String grade,
+    String className,
+    String avatar,
+    VoidCallback onTap,
+  ) {
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -396,13 +386,14 @@ class ParentProfileScreen extends StatelessWidget {
               const SizedBox(width: 12),
               Text(
                 label,
-                style: AppTheme.tajawal(
-                  fontSize: 14,
-                  color: AppTheme.gray800,
-                ),
+                style: AppTheme.tajawal(fontSize: 14, color: AppTheme.gray800),
               ),
               const Spacer(),
-              const Icon(Icons.chevron_right, color: AppTheme.gray400, size: 20),
+              const Icon(
+                Icons.chevron_right,
+                color: AppTheme.gray400,
+                size: 20,
+              ),
             ],
           ),
         ),
@@ -410,4 +401,3 @@ class ParentProfileScreen extends StatelessWidget {
     );
   }
 }
-

@@ -5,6 +5,7 @@ plugins {
     id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
+    id("com.google.gms.google-services")
 }
 
 // Load keystore properties
@@ -19,11 +20,12 @@ if (keystorePropertiesFile.exists()) {
 android {
     namespace = "com.sho3latelnour.madrasty"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    ndkVersion = "27.0.12077973"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
+        isCoreLibraryDesugaringEnabled = true
     }
 
     kotlinOptions {
@@ -35,7 +37,7 @@ android {
         applicationId = "com.sho3latelnour.madrasty"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
+        minSdk = maxOf(flutter.minSdkVersion, 21) // Minimum SDK 21 required for desugaring
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
@@ -59,4 +61,9 @@ android {
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    // Core library desugaring for Java 8+ API support on older Android versions
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
 }

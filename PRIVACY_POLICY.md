@@ -255,3 +255,9 @@ You may request deletion of your account and associated information by contactin
 **Thank you for trusting Sho3lat Elnour Schools with your information. We are committed to protecting your privacy and providing a secure platform for managing your educational needs.**
 
 
+
+
+
+
+
+
