@@ -1,27 +1,168 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/models/dashboard/attendance_record.dart';
 
 class AttendanceDetailsScreen extends StatelessWidget {
   final Map<String, dynamic>? student;
   final String? date;
+  final Map<String, dynamic>? recordData;
 
   const AttendanceDetailsScreen({
     super.key,
     this.student,
     this.date,
+    this.recordData,
   });
+
+  Color _getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'present':
+        return Colors.green;
+      case 'absent':
+        return Colors.red;
+      case 'late':
+        return Colors.orange;
+      case 'early_leave':
+      case 'earlyleave':
+        return Colors.blue;
+      case 'permission':
+        return Colors.purple;
+      default:
+        return AppTheme.gray600;
+    }
+  }
+
+  Color _getStatusBgColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'present':
+        return Colors.green.shade100;
+      case 'absent':
+        return Colors.red.shade100;
+      case 'late':
+        return Colors.orange.shade100;
+      case 'early_leave':
+      case 'earlyleave':
+        return Colors.blue.shade100;
+      case 'permission':
+        return Colors.purple.shade100;
+      default:
+        return AppTheme.gray100;
+    }
+  }
+
+  IconData _getStatusIcon(String status) {
+    switch (status.toLowerCase()) {
+      case 'present':
+        return Icons.check_circle;
+      case 'absent':
+        return Icons.cancel;
+      case 'late':
+        return Icons.access_time;
+      case 'early_leave':
+      case 'earlyleave':
+        return Icons.exit_to_app;
+      case 'permission':
+        return Icons.assignment_turned_in;
+      default:
+        return Icons.help_outline;
+    }
+  }
+
+  String _getStatusArabic(String status) {
+    switch (status.toLowerCase()) {
+      case 'present':
+        return 'حاضر';
+      case 'absent':
+        return 'غائب';
+      case 'late':
+        return 'متأخر';
+      case 'early_leave':
+      case 'earlyleave':
+        return 'انصراف مبكر';
+      case 'permission':
+        return 'إذن';
+      default:
+        return status;
+    }
+  }
+
+  String _formatTime(DateTime? dateTime) {
+    if (dateTime == null) return '--:--';
+    final hour = dateTime.hour;
+    final minute = dateTime.minute.toString().padLeft(2, '0');
+    final period = hour < 12 ? 'صباحاً' : 'مساءً';
+    final displayHour = hour > 12 ? hour - 12 : (hour == 0 ? 12 : hour);
+    return '$displayHour:$minute $period';
+  }
+
+  String _formatFullDate(DateTime date) {
+    final monthNames = [
+      '',
+      'يناير',
+      'فبراير',
+      'مارس',
+      'أبريل',
+      'مايو',
+      'يونيو',
+      'يوليو',
+      'أغسطس',
+      'سبتمبر',
+      'أكتوبر',
+      'نوفمبر',
+      'ديسمبر',
+    ];
+    final dayNames = [
+      'الإثنين',
+      'الثلاثاء',
+      'الأربعاء',
+      'الخميس',
+      'الجمعة',
+      'السبت',
+      'الأحد',
+    ];
+    final dayName = dayNames[date.weekday - 1];
+    return '$dayName، ${date.day} ${monthNames[date.month]} ${date.year}';
+  }
+
+  String _calculateDuration(DateTime? entry, DateTime? exit) {
+    if (entry == null || exit == null) return '--';
+    final duration = exit.difference(entry);
+    final hours = duration.inHours;
+    final minutes = duration.inMinutes % 60;
+    if (hours > 0 && minutes > 0) {
+      return '$hours ساعة و $minutes دقيقة';
+    } else if (hours > 0) {
+      return '$hours ساعة';
+    } else {
+      return '$minutes دقيقة';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final attendanceData = {
-      'status': 'حضور',
-      'statusColor': Colors.green,
-      'date': 'الأربعاء، 18 ديسمبر 2024',
-      'entryTime': '7:15 صباحاً',
-      'exitTime': '1:45 مساءً',
-      'notes': 'حضر الطالب في الموعد المحدد وغادر في نهاية اليوم الدراسي',
-      'totalHours': '6 ساعات و 30 دقيقة',
-    };
+    // Parse the record data from API
+    AttendanceRecord? record;
+    if (recordData != null) {
+      record = AttendanceRecord.fromJson(recordData!);
+    }
+
+    // Fallback date if no record
+    DateTime displayDate = DateTime.now();
+    if (record != null) {
+      displayDate = record.entryTime ?? record.date;
+    } else if (date != null) {
+      displayDate = DateTime.tryParse(date!) ?? DateTime.now();
+    }
+
+    final status = record?.status ?? 'present';
+    final statusColor = _getStatusColor(status);
+    final statusBgColor = _getStatusBgColor(status);
+    final statusIcon = _getStatusIcon(status);
+    final statusArabic = _getStatusArabic(status);
+
+    final entryTime = record?.entryTime;
+    final exitTime = record?.exitTime;
+    final notes = record?.notes;
 
     return Directionality(
       textDirection: TextDirection.rtl,
@@ -67,15 +208,15 @@ class AttendanceDetailsScreen extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     decoration: BoxDecoration(
-                      color: AppTheme.white.withOpacity(0.1),
+                      color: AppTheme.white.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
-                        color: AppTheme.white.withOpacity(0.2),
+                        color: AppTheme.white.withValues(alpha: 0.2),
                         width: 1,
                       ),
                     ),
                     child: Text(
-                      attendanceData['date'] as String,
+                      _formatFullDate(displayDate),
                       style: AppTheme.tajawal(
                         fontSize: 14,
                         color: AppTheme.white,
@@ -99,7 +240,7 @@ class AttendanceDetailsScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
+                            color: Colors.black.withValues(alpha: 0.05),
                             blurRadius: 10,
                             offset: const Offset(0, 2),
                           ),
@@ -111,27 +252,27 @@ class AttendanceDetailsScreen extends StatelessWidget {
                             width: 80,
                             height: 80,
                             decoration: BoxDecoration(
-                              color: Colors.green.shade100,
+                              color: statusBgColor,
                               shape: BoxShape.circle,
                             ),
-                            child: const Icon(
-                              Icons.login,
-                              color: Colors.green,
+                            child: Icon(
+                              statusIcon,
+                              color: statusColor,
                               size: 40,
                             ),
                           ),
                           const SizedBox(height: 16),
                           Text(
-                            attendanceData['status'] as String,
+                            statusArabic,
                             style: AppTheme.tajawal(
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
-                              color: Colors.green.shade700,
+                              color: statusColor,
                             ),
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            student?['name'] ?? 'محمد أحمد العلي',
+                            student?['name'] ?? '',
                             style: AppTheme.tajawal(
                               fontSize: 14,
                               color: AppTheme.gray500,
@@ -149,7 +290,7 @@ class AttendanceDetailsScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
+                            color: Colors.black.withValues(alpha: 0.05),
                             blurRadius: 10,
                             offset: const Offset(0, 2),
                           ),
@@ -177,7 +318,7 @@ class AttendanceDetailsScreen extends StatelessWidget {
                             Icons.login,
                             'وقت الدخول',
                             'دخول إلى المدرسة',
-                            attendanceData['entryTime'] as String,
+                            _formatTime(entryTime),
                             Colors.green,
                           ),
                           const SizedBox(height: 12),
@@ -185,7 +326,7 @@ class AttendanceDetailsScreen extends StatelessWidget {
                             Icons.logout,
                             'وقت الانصراف',
                             'خروج من المدرسة',
-                            attendanceData['exitTime'] as String,
+                            _formatTime(exitTime),
                             Colors.orange,
                           ),
                           const SizedBox(height: 12),
@@ -193,7 +334,7 @@ class AttendanceDetailsScreen extends StatelessWidget {
                             Icons.timer,
                             'المدة الإجمالية',
                             'وقت البقاء في المدرسة',
-                            attendanceData['totalHours'] as String,
+                            _calculateDuration(entryTime, exitTime),
                             Colors.blue,
                           ),
                         ],
@@ -208,7 +349,7 @@ class AttendanceDetailsScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
+                            color: Colors.black.withValues(alpha: 0.05),
                             blurRadius: 10,
                             offset: const Offset(0, 2),
                           ),
@@ -233,10 +374,10 @@ class AttendanceDetailsScreen extends StatelessWidget {
                           ),
                           const SizedBox(height: 12),
                           Text(
-                            attendanceData['notes'] as String,
+                            notes?.isNotEmpty == true ? notes! : 'لا توجد ملاحظات',
                             style: AppTheme.tajawal(
                               fontSize: 14,
-                              color: AppTheme.gray600,
+                              color: notes?.isNotEmpty == true ? AppTheme.gray600 : AppTheme.gray400,
                               height: 1.6,
                             ),
                           ),
@@ -270,7 +411,7 @@ class AttendanceDetailsScreen extends StatelessWidget {
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: iconColor.withOpacity(0.1),
+                    color: iconColor.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(icon, color: iconColor, size: 20),

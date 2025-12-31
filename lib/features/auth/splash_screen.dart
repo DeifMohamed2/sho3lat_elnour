@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/services/auth_service.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -11,6 +12,7 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
+  final _authService = AuthService();
 
   @override
   void initState() {
@@ -20,12 +22,51 @@ class _SplashScreenState extends State<SplashScreen>
       duration: const Duration(milliseconds: 1500),
     )..repeat(reverse: true);
     
-    // Navigate to login after 2 seconds
-    Future.delayed(const Duration(seconds: 2), () {
+    _checkSessionAndNavigate();
+  }
+
+  Future<void> _checkSessionAndNavigate() async {
+    // Wait for splash animation (2 seconds)
+    await Future.delayed(const Duration(seconds: 2));
+    
+    if (!mounted) return;
+
+    try {
+      // Initialize auth service and check for saved session
+      await _authService.initialize();
+      final hasSession = await _authService.hasSavedSession();
+      
+      if (hasSession) {
+        // Load saved session data
+        final sessionData = await _authService.getSavedSession();
+        
+        if (sessionData != null && mounted) {
+          print('✅ [SPLASH] Found saved session, navigating to main screen');
+          // Navigate to main screen with saved session data
+          Navigator.of(context).pushReplacementNamed(
+            '/main',
+            arguments: {
+              'student': sessionData['student'],
+              'students': sessionData['students'],
+              'token': sessionData['token'],
+            },
+          );
+          return;
+        }
+      }
+      
+      // No session found, navigate to login
+      if (mounted) {
+        print('ℹ️ [SPLASH] No saved session, navigating to login');
+        Navigator.of(context).pushReplacementNamed('/login');
+      }
+    } catch (e) {
+      print('❌ [SPLASH] Error checking session: $e');
+      // On error, navigate to login
       if (mounted) {
         Navigator.of(context).pushReplacementNamed('/login');
       }
-    });
+    }
   }
 
   @override

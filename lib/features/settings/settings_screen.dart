@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/services/auth_service.dart';
+import '../../core/services/api_service.dart';
+import '../../core/constants/api_constants.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -12,6 +15,146 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _attendanceNotifications = true;
   bool _messageNotifications = true;
   bool _gradeNotifications = true;
+  String _selectedLanguage = 'ar'; // 'ar' for Arabic, 'en' for English
+  bool _isChangingLanguage = false;
+  final _authService = AuthService();
+  final _apiService = ApiService();
+
+  Future<void> _handleLogout() async {
+    // Show confirmation dialog
+    final shouldLogout = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(
+          'تسجيل الخروج',
+          style: AppTheme.tajawal(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: Text(
+          'هل أنت متأكد من رغبتك في تسجيل الخروج؟',
+          style: AppTheme.tajawal(fontSize: 14),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(
+              'إلغاء',
+              style: AppTheme.tajawal(
+                fontSize: 14,
+                color: AppTheme.primaryBlue,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(
+              'تسجيل الخروج',
+              style: AppTheme.tajawal(
+                fontSize: 14,
+                color: Colors.red,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldLogout == true) {
+      // Clear session and navigate to login
+      await _authService.logout();
+      if (mounted) {
+        Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+      }
+    }
+  }
+
+  Future<void> _changeLanguage(String languageCode) async {
+    if (_isChangingLanguage) return;
+    
+    setState(() {
+      _isChangingLanguage = true;
+    });
+
+    try {
+      // API expects 'EN' or 'AR' in uppercase
+      final apiLanguage = languageCode.toUpperCase();
+      
+      await _apiService.put(
+        ApiConstants.languageEndpoint,
+        {'language': apiLanguage},
+      );
+
+      setState(() {
+        _selectedLanguage = languageCode;
+        _isChangingLanguage = false;
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.check_circle, color: AppTheme.white),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    languageCode == 'ar' 
+                        ? 'تم تغيير اللغة إلى العربية'
+                        : 'Language changed to English',
+                    style: AppTheme.tajawal(
+                      fontSize: 14,
+                      color: AppTheme.white,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: AppTheme.primaryBlue,
+            duration: const Duration(seconds: 2),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      setState(() {
+        _isChangingLanguage = false;
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.error_outline, color: AppTheme.white),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'فشل في تغيير اللغة',
+                    style: AppTheme.tajawal(
+                      fontSize: 14,
+                      color: AppTheme.white,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 2),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -189,12 +332,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             iconColor: Colors.indigo,
                             label: 'اللغة',
                             trailing: Text(
-                              'العربية',
+                              _selectedLanguage == 'ar' ? 'العربية' : 'English',
                               style: AppTheme.tajawal(
                                 fontSize: 14,
                                 color: AppTheme.gray500,
                               ),
                             ),
+                            onTap: () => _showLanguageDialog(),
                           ),
                           // Divider(height: 1, color: AppTheme.borderGray),
                           // _buildSettingsItem(
@@ -254,10 +398,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton.icon(
-                        onPressed: () {
-                          // Handle logout
-                          Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
-                        },
+                        onPressed: _handleLogout,
                         icon: const Icon(Icons.logout, size: 20),
                         label: Text(
                           'تسجيل الخروج',
@@ -385,6 +526,151 @@ class _SettingsScreenState extends State<SettingsScreen> {
             activeColor: AppTheme.primaryBlue,
           ),
         ],
+      ),
+    );
+  }
+
+  void _showLanguageDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Directionality(
+          textDirection: TextDirection.rtl,
+          child: AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            title: Row(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: Colors.indigo.shade100,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.language,
+                    color: Colors.indigo,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'اختر اللغة',
+                    style: AppTheme.tajawal(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: AppTheme.gray800,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildLanguageOption(
+                  context: context,
+                  languageCode: 'ar',
+                  languageName: 'العربية',
+                  languageNameSecondary: 'Arabic',
+                ),
+                const SizedBox(height: 12),
+                _buildLanguageOption(
+                  context: context,
+                  languageCode: 'en',
+                  languageName: 'English',
+                  languageNameSecondary: 'الإنجليزية',
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text(
+                  'إلغاء',
+                  style: AppTheme.tajawal(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: AppTheme.gray600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildLanguageOption({
+    required BuildContext context,
+    required String languageCode,
+    required String languageName,
+    required String languageNameSecondary,
+  }) {
+    final isSelected = _selectedLanguage == languageCode;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () async {
+          Navigator.of(context).pop();
+          await _changeLanguage(languageCode);
+        },
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: isSelected ? AppTheme.primaryBlue.withOpacity(0.1) : AppTheme.backgroundLight,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isSelected ? AppTheme.primaryBlue : AppTheme.borderGray,
+              width: isSelected ? 2 : 1,
+            ),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      languageName,
+                      style: AppTheme.tajawal(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: isSelected ? AppTheme.primaryBlue : AppTheme.gray800,
+                      ),
+                    ),
+                    Text(
+                      languageNameSecondary,
+                      style: AppTheme.tajawal(
+                        fontSize: 12,
+                        color: AppTheme.gray500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (isSelected)
+                Container(
+                  width: 24,
+                  height: 24,
+                  decoration: const BoxDecoration(
+                    color: AppTheme.primaryBlue,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.check,
+                    color: AppTheme.white,
+                    size: 16,
+                  ),
+                ),
+            ],
+          ),
+        ),
       ),
     );
   }

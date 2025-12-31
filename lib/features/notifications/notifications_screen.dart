@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/providers/notifications_provider.dart';
+import '../../core/models/dashboard/notifications_info.dart';
+import 'notification_details_screen.dart';
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
@@ -9,87 +12,97 @@ class NotificationsScreen extends StatefulWidget {
 }
 
 class _NotificationsScreenState extends State<NotificationsScreen> {
-  final List<Map<String, dynamic>> _notifications = [
-    {
-      'id': 1,
-      'isNew': true,
-      'icon': Icons.check_circle,
-      'iconColor': Colors.green,
-      'iconBg': Colors.green.shade100,
-      'title': 'تم تسجيل الحضور',
-      'description': 'تم تسجيل حضورك بنجاح للفصل الخامس - الفيزياء',
-      'time': 'منذ 5 دقائق',
-    },
-    {
-      'id': 2,
-      'isNew': true,
-      'icon': Icons.info_outline,
-      'iconColor': Colors.blue,
-      'iconBg': Colors.blue.shade100,
-      'title': 'حصة قادمة',
-      'description': 'لديك حصة الرياضيات بعد 30 دقيقة - الحصة المقبلة',
-      'time': 'منذ 15 دقيقة',
-    },
-    {
-      'id': 3,
-      'isNew': false,
-      'icon': Icons.description_outlined,
-      'iconColor': AppTheme.gray600,
-      'iconBg': AppTheme.gray100,
-      'title': 'إعلان جديد',
-      'description': 'تم نشر جدول الامتحانات النهائية للفصل الدراسي الحالي',
-      'time': 'منذ ساعة',
-    },
-    {
-      'id': 4,
-      'isNew': false,
-      'icon': Icons.warning_amber_rounded,
-      'iconColor': Colors.orange,
-      'iconBg': Colors.orange.shade100,
-      'title': 'تغيير في الجدول',
-      'description': 'تم تأجيل حصة العلوم من الساعة 9:00 إلى 10:00',
-      'time': 'منذ ساعتين',
-    },
-    {
-      'id': 5,
-      'isNew': false,
-      'icon': Icons.warning_amber_rounded,
-      'iconColor': Colors.orange,
-      'iconBg': Colors.orange.shade100,
-      'title': 'تذكير',
-      'description': 'لا تنسى تسليم الواجب المنزلي لمادة اللغة العربية',
-      'time': 'منذ 3 ساعات',
-    },
-    {
-      'id': 6,
-      'isNew': false,
-      'icon': Icons.info_outline,
-      'iconColor': AppTheme.gray600,
-      'iconBg': AppTheme.gray100,
-      'title': 'تسجيل غياب',
-      'description': 'تم تسجيل غيابك عن حصة التاريخ اليوم',
-      'time': 'أمس',
-    },
-    {
-      'id': 7,
-      'isNew': false,
-      'icon': Icons.people_outline,
-      'iconColor': AppTheme.gray600,
-      'iconBg': AppTheme.gray100,
-      'title': 'نشاط جديد',
-      'description': 'تم إضافة نشاط رياضي جديد - كرة القدم يوم الخميس',
-      'time': 'أمس',
-    },
-  ];
+  final NotificationsProvider _notificationsProvider = NotificationsProvider();
 
-  int get _newNotificationsCount => _notifications.where((n) => n['isNew'] == true).length;
+  @override
+  void initState() {
+    super.initState();
+    _loadNotifications();
+  }
 
-  void _markAllAsRead() {
-    setState(() {
-      for (var notification in _notifications) {
-        notification['isNew'] = false;
-      }
-    });
+  Future<void> _loadNotifications() async {
+    await _notificationsProvider.fetchNotifications();
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  Future<void> _refresh() async {
+    await _notificationsProvider.refresh();
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  void _markAllAsRead() async {
+    await _notificationsProvider.markAllAsRead();
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  void _markAsRead(String notificationId) async {
+    await _notificationsProvider.markAsRead(notificationId);
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  IconData _getIconForNotification(NotificationItem notification) {
+    switch (notification.type) {
+      case 'present':
+        return Icons.check_circle;
+      case 'absent':
+        return Icons.cancel;
+      case 'late':
+        return Icons.access_time;
+      case 'checkout':
+        return Icons.exit_to_app;
+      case 'announcement':
+        return Icons.campaign;
+      case 'message':
+        return Icons.message;
+      default:
+        return Icons.notifications;
+    }
+  }
+
+  Color _getIconColorForNotification(NotificationItem notification) {
+    switch (notification.type) {
+      case 'present':
+        return Colors.green;
+      case 'absent':
+        return Colors.red;
+      case 'late':
+        return Colors.orange;
+      case 'checkout':
+        return Colors.blue;
+      case 'announcement':
+        return AppTheme.primaryBlue;
+      case 'message':
+        return Colors.purple;
+      default:
+        return AppTheme.gray600;
+    }
+  }
+
+  Color _getIconBgForNotification(NotificationItem notification) {
+    switch (notification.type) {
+      case 'present':
+        return Colors.green.shade100;
+      case 'absent':
+        return Colors.red.shade100;
+      case 'late':
+        return Colors.orange.shade100;
+      case 'checkout':
+        return Colors.blue.shade100;
+      case 'announcement':
+        return AppTheme.primaryBlue.withOpacity(0.1);
+      case 'message':
+        return Colors.purple.shade100;
+      default:
+        return AppTheme.gray100;
+    }
   }
 
   @override
@@ -138,9 +151,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   // New count (left side in RTL)
-                  if (_newNotificationsCount > 0)
+                  if (_notificationsProvider.unreadCount > 0)
                     Text(
-                      '$_newNotificationsCount إشعار جديد',
+                      '${_notificationsProvider.unreadCount} إشعار جديد',
                       style: AppTheme.tajawal(
                         fontSize: 14,
                         color: AppTheme.white.withOpacity(0.9),
@@ -150,13 +163,13 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     const SizedBox.shrink(),
                   // Mark all as read button (right side in RTL)
                   TextButton(
-                    onPressed: _newNotificationsCount > 0 ? _markAllAsRead : null,
+                    onPressed: _notificationsProvider.unreadCount > 0 ? _markAllAsRead : null,
                     child: Text(
                       'تعليم الكل كمقروء',
                       style: AppTheme.tajawal(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
-                        color: _newNotificationsCount > 0
+                        color: _notificationsProvider.unreadCount > 0
                             ? AppTheme.white
                             : AppTheme.white.withOpacity(0.5),
                       ),
@@ -167,20 +180,105 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             ),
           ),
         ),
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            children: [
-              ..._notifications.map((notification) => _buildNotificationCard(notification)),
-            ],
-          ),
+        body: _buildBody(),
+      ),
+    );
+  }
+
+  Widget _buildBody() {
+    if (_notificationsProvider.isLoading && !_notificationsProvider.hasData) {
+      return const Center(
+        child: CircularProgressIndicator(
+          color: AppTheme.primaryBlue,
+        ),
+      );
+    }
+
+    if (_notificationsProvider.hasError && !_notificationsProvider.hasData) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.error_outline,
+              size: 64,
+              color: AppTheme.gray400,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              _notificationsProvider.errorMessage ?? 'حدث خطأ',
+              style: AppTheme.tajawal(
+                fontSize: 16,
+                color: AppTheme.gray600,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: _loadNotifications,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primaryBlue,
+                foregroundColor: AppTheme.white,
+                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: Text(
+                'إعادة المحاولة',
+                style: AppTheme.tajawal(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final notifications = _notificationsProvider.notifications;
+
+    if (notifications.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.notifications_off_outlined,
+              size: 64,
+              color: AppTheme.gray400,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'لا توجد إشعارات',
+              style: AppTheme.tajawal(
+                fontSize: 16,
+                color: AppTheme.gray600,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return RefreshIndicator(
+      onRefresh: _refresh,
+      color: AppTheme.primaryBlue,
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          children: [
+            ...notifications.map((notification) => _buildNotificationCard(notification)),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildNotificationCard(Map<String, dynamic> notification) {
-    final isNew = notification['isNew'] == true;
+  Widget _buildNotificationCard(NotificationItem notification) {
+    final isNew = !notification.isRead;
     
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -199,29 +297,35 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         color: Colors.transparent,
         child: InkWell(
           onTap: () {
-            // Handle notification tap
+            // Mark as read if not already read
             if (isNew) {
-              setState(() {
-                notification['isNew'] = false;
-              });
+              _markAsRead(notification.id);
             }
+            // Navigate to notification details
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => NotificationDetailsScreen(
+                  notification: notification,
+                ),
+              ),
+            );
           },
           borderRadius: BorderRadius.circular(16),
           child: Padding(
             padding: const EdgeInsets.all(16),
             child: Row(
               children: [
-                                // Icon (right side in RTL)
+                // Icon (right side in RTL)
                 Container(
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
-                    color: notification['iconBg'] as Color,
+                    color: _getIconBgForNotification(notification),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
-                    notification['icon'] as IconData,
-                    color: notification['iconColor'] as Color,
+                    _getIconForNotification(notification),
+                    color: _getIconColorForNotification(notification),
                     size: 24,
                   ),
                 ),
@@ -232,7 +336,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        notification['title'] as String,
+                        notification.title,
                         style: AppTheme.tajawal(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
@@ -241,7 +345,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        notification['description'] as String,
+                        notification.body,
                         style: AppTheme.tajawal(
                           fontSize: 12,
                           color: AppTheme.gray600,
@@ -251,7 +355,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        notification['time'] as String,
+                        notification.timeAgo,
                         style: AppTheme.tajawal(
                           fontSize: 11,
                           color: AppTheme.gray400,

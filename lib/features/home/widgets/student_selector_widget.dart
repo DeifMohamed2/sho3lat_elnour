@@ -3,34 +3,22 @@ import '../../../core/theme/app_theme.dart';
 
 class StudentSelectorWidget extends StatelessWidget {
   final Map<String, dynamic>? currentStudent;
+  final List<Map<String, dynamic>>? students;
   final Function(Map<String, dynamic>) onSelectStudent;
   final VoidCallback onClose;
 
   const StudentSelectorWidget({
     super.key,
     this.currentStudent,
+    this.students,
     required this.onSelectStudent,
     required this.onClose,
   });
 
   @override
   Widget build(BuildContext context) {
-    final students = [
-      {
-        'id': 1,
-        'name': 'محمد أحمد العلي',
-        'grade': 'الصف الخامس',
-        'class': '5-أ',
-        'avatar': '👦',
-      },
-      {
-        'id': 2,
-        'name': 'سارة أحمد العلي',
-        'grade': 'الصف الثالث',
-        'class': '3-ب',
-        'avatar': '👧',
-      },
-    ];
+    // Use provided students from API or fallback to empty list
+    final studentsList = students ?? [];
 
     return Stack(
       children: [
@@ -103,96 +91,146 @@ class StudentSelectorWidget extends StatelessWidget {
                 ),
                 // Students List
                 Flexible(
-                  child: ListView.builder(
-                    shrinkWrap: true,
-                    padding: const EdgeInsets.all(24),
-                    itemCount: students.length,
-                    itemBuilder: (context, index) {
-                      final student = students[index];
-                      final isSelected = currentStudent?['id'] == student['id'];
-
-                      return Container(
-                        margin: const EdgeInsets.only(bottom: 12),
-                        child: Material(
-                          color: isSelected
-                              ? AppTheme.primaryBlue
-                              : AppTheme.backgroundLight,
-                          borderRadius: BorderRadius.circular(16),
-                          child: InkWell(
-                            onTap: () => onSelectStudent(student),
-                            borderRadius: BorderRadius.circular(16),
-                            child: Container(
-                              padding: const EdgeInsets.all(16),
-                              child: Row(
-                                children: [
-                                  Container(
-                                    width: 56,
-                                    height: 56,
-                                    decoration: BoxDecoration(
-                                      color: isSelected
-                                          ? AppTheme.white.withOpacity(0.2)
-                                          : AppTheme.white,
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: Center(
-                                      child: Text(
-                                        student['avatar'] as String,
-                                        style: const TextStyle(fontSize: 28),
-                                      ),
-                                    ),
+                  child: studentsList.isEmpty
+                      ? Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: Center(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.person_off,
+                                  size: 48,
+                                  color: AppTheme.gray400,
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  'لا يوجد طلاب',
+                                  style: AppTheme.tajawal(
+                                    fontSize: 16,
+                                    color: AppTheme.gray600,
                                   ),
-                                  const SizedBox(width: 16),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
+                      : ListView.builder(
+                          shrinkWrap: true,
+                          padding: const EdgeInsets.all(24),
+                          itemCount: studentsList.length,
+                          itemBuilder: (context, index) {
+                            final student = studentsList[index];
+                            final isSelected = currentStudent?['id'] == student['id'];
+                            final isBlocked = student['isBlocked'] == true;
+
+                            return Container(
+                              margin: const EdgeInsets.only(bottom: 12),
+                              child: Material(
+                                color: isSelected
+                                    ? AppTheme.primaryBlue
+                                    : isBlocked
+                                        ? Colors.red.shade50
+                                        : AppTheme.backgroundLight,
+                                borderRadius: BorderRadius.circular(16),
+                                child: InkWell(
+                                  onTap: isBlocked ? null : () => onSelectStudent(student),
+                                  borderRadius: BorderRadius.circular(16),
+                                  child: Container(
+                                    padding: const EdgeInsets.all(16),
+                                    child: Row(
                                       children: [
-                                        Text(
-                                          student['name'] as String,
-                                          style: AppTheme.tajawal(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w600,
+                                        Container(
+                                          width: 56,
+                                          height: 56,
+                                          decoration: BoxDecoration(
                                             color: isSelected
-                                                ? AppTheme.white
-                                                : AppTheme.gray800,
+                                                ? AppTheme.white.withOpacity(0.2)
+                                                : AppTheme.white,
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: Center(
+                                            child: Text(
+                                              student['avatar'] as String? ?? '👦',
+                                              style: const TextStyle(fontSize: 28),
+                                            ),
                                           ),
                                         ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          '${student['grade'] as String} - ${student['class'] as String}',
-                                          style: AppTheme.tajawal(
-                                            fontSize: 14,
-                                            color: isSelected
-                                                ? AppTheme.white.withOpacity(0.8)
-                                                : AppTheme.gray500,
+                                        const SizedBox(width: 16),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                student['name'] as String? ?? '',
+                                                style: AppTheme.tajawal(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: isSelected
+                                                      ? AppTheme.white
+                                                      : isBlocked
+                                                          ? Colors.red.shade700
+                                                          : AppTheme.gray800,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                '${student['grade'] as String? ?? ''} - ${student['class'] as String? ?? ''}',
+                                                style: AppTheme.tajawal(
+                                                  fontSize: 14,
+                                                  color: isSelected
+                                                      ? AppTheme.white.withOpacity(0.8)
+                                                      : AppTheme.gray500,
+                                                ),
+                                              ),
+                                              if (isBlocked) ...[
+                                                const SizedBox(height: 4),
+                                                Container(
+                                                  padding: const EdgeInsets.symmetric(
+                                                    horizontal: 8,
+                                                    vertical: 2,
+                                                  ),
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.red.shade100,
+                                                    borderRadius: BorderRadius.circular(8),
+                                                  ),
+                                                  child: Text(
+                                                    'محظور',
+                                                    style: AppTheme.tajawal(
+                                                      fontSize: 10,
+                                                      fontWeight: FontWeight.w600,
+                                                      color: Colors.red.shade700,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ],
                                           ),
                                         ),
+                                        if (isSelected)
+                                          Container(
+                                            width: 24,
+                                            height: 24,
+                                            decoration: const BoxDecoration(
+                                              color: AppTheme.white,
+                                              shape: BoxShape.circle,
+                                            ),
+                                            child: const Center(
+                                              child: Icon(
+                                                Icons.check,
+                                                size: 16,
+                                                color: AppTheme.primaryBlue,
+                                              ),
+                                            ),
+                                          ),
                                       ],
                                     ),
                                   ),
-                                  if (isSelected)
-                                    Container(
-                                      width: 24,
-                                      height: 24,
-                                      decoration: const BoxDecoration(
-                                        color: AppTheme.white,
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: const Center(
-                                        child: Icon(
-                                          Icons.check,
-                                          size: 16,
-                                          color: AppTheme.primaryBlue,
-                                        ),
-                                      ),
-                                    ),
-                                ],
+                                ),
                               ),
-                            ),
-                          ),
+                            );
+                          },
                         ),
-                      );
-                    },
-                  ),
                 ),
               ],
             ),

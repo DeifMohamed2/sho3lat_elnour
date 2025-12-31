@@ -7,7 +7,6 @@ import 'features/auth/splash_screen.dart';
 import 'features/auth/login_screen.dart';
 import 'features/home/main_layout.dart';
 import 'features/profile/parent_profile_screen.dart';
-import 'features/profile/manage_children_screen.dart';
 import 'features/settings/settings_screen.dart';
 import 'features/attendance/attendance_details_screen.dart';
 import 'features/messages/message_details_screen.dart';
@@ -78,13 +77,13 @@ class MyApp extends StatelessWidget {
           return MainLayout(student: args?['student']);
         },
         '/parentProfile': (context) => const ParentProfileScreen(),
-        '/manageChildren': (context) => const ManageChildrenScreen(),
         '/settings': (context) => const SettingsScreen(),
         '/attendanceDetails': (context) {
           final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
           return AttendanceDetailsScreen(
             student: args['student'],
             date: args['date'],
+            recordData: args['record'],
           );
         },
         '/messageDetails': (context) {

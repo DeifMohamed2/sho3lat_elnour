@@ -42,6 +42,20 @@ class _LoginScreenState extends State<LoginScreen> {
     });
   }
 
+  /// Extract parent name from student name
+  /// For Arabic names like "محمد أحمد العلي", we derive parent name "أحمد محمد العلي"
+  String _extractParentName(String studentName) {
+    final parts = studentName.trim().split(' ');
+    if (parts.length >= 3) {
+      // Swap first two parts to get parent name
+      // Student: محمد أحمد العلي -> Parent: أحمد محمد العلي
+      return '${parts[1]} ${parts[0]} ${parts.sublist(2).join(' ')}';
+    } else if (parts.length == 2) {
+      return '${parts[1]} ${parts[0]}';
+    }
+    return studentName; // Return as-is if can't parse
+  }
+
   Future<void> _handleLogin() async {
     if (!_isButtonEnabled || _isLoading) return;
 
@@ -132,6 +146,32 @@ class _LoginScreenState extends State<LoginScreen> {
 
         print('👥 [LOGIN] All students processed: ${allStudents.length} students');
         print('🎫 [LOGIN] Auth token: ${loginResponse.token.substring(0, 20)}...');
+
+        // Create parent data from the first student's name pattern
+        // Assuming parent's name is derived from student's name (e.g., محمد أحمد العلي -> أحمد محمد العلي)
+        final phoneNumber = _phoneController.text.trim();
+        final parentData = {
+          'name': _extractParentName(student.name),
+          'phone': phoneNumber,
+          'role': 'ولي أمر',
+        };
+        
+        print('👨‍👩‍👧‍👦 [LOGIN] Parent data: ${parentData['name']} - ${parentData['phone']}');
+
+        // Save session to persistent storage
+        print('💾 [LOGIN] Saving session to persistent storage...');
+        final sessionSaved = await _authService.saveSession(
+          token: loginResponse.token,
+          student: studentMap,
+          students: allStudents,
+          parent: parentData,
+        );
+        
+        if (sessionSaved) {
+          print('✅ [LOGIN] Session saved successfully');
+        } else {
+          print('⚠️ [LOGIN] Warning: Failed to save session, but continuing...');
+        }
 
         if (mounted) {
           print('🧭 [LOGIN] Navigating to main screen...');

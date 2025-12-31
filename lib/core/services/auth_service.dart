@@ -3,9 +3,23 @@ import '../models/auth/login_request.dart';
 import '../models/auth/login_response.dart';
 import '../models/auth/api_error.dart';
 import 'api_service.dart';
+import 'session_storage_service.dart';
 
 class AuthService {
   final ApiService _apiService = ApiService();
+  final SessionStorageService _sessionStorage = SessionStorageService();
+
+  /// Initialize and load saved session if exists
+  Future<void> initialize() async {
+    await _sessionStorage.initialize();
+    final savedToken = await _sessionStorage.getToken();
+    if (savedToken != null && savedToken.isNotEmpty) {
+      _apiService.setAuthToken(savedToken);
+      print('✅ [AUTH] Loaded saved session token');
+    } else {
+      print('ℹ️ [AUTH] No saved session found');
+    }
+  }
 
   /// Login with phone number and student code
   /// 
@@ -69,12 +83,74 @@ class AuthService {
     }
   }
 
-  /// Logout - clears the stored auth token
-  void logout() {
+  /// Save session data after successful login
+  Future<bool> saveSession({
+    required String token,
+    required Map<String, dynamic> student,
+    required List<Map<String, dynamic>> students,
+    Map<String, dynamic>? parent,
+  }) async {
+    await _sessionStorage.initialize();
+    final saved = await _sessionStorage.saveSession(
+      token: token,
+      student: student,
+      students: students,
+    );
+    
+    // Save parent data if provided
+    if (parent != null) {
+      await _sessionStorage.saveParentData(parent);
+      print('✅ [AUTH] Parent data saved');
+    }
+    
+    if (saved) {
+      _apiService.setAuthToken(token);
+      print('✅ [AUTH] Session saved successfully');
+    } else {
+      print('❌ [AUTH] Failed to save session');
+    }
+    return saved;
+  }
+
+  /// Get saved session data
+  Future<Map<String, dynamic>?> getSavedSession() async {
+    await _sessionStorage.initialize();
+    final hasSession = await _sessionStorage.hasSession();
+    if (!hasSession) {
+      return null;
+    }
+
+    final token = await _sessionStorage.getToken();
+    final student = await _sessionStorage.getCurrentStudent();
+    final students = await _sessionStorage.getAllStudents();
+    final parent = await _sessionStorage.getParentData();
+
+    if (token != null && student != null && students != null) {
+      return {
+        'token': token,
+        'student': student,
+        'students': students,
+        if (parent != null) 'parent': parent,
+      };
+    }
+    return null;
+  }
+
+  /// Logout - clears the stored auth token and session data
+  Future<void> logout() async {
+    await _sessionStorage.initialize();
+    await _sessionStorage.clearSession();
     _apiService.setAuthToken(null);
+    print('✅ [AUTH] Logged out and session cleared');
   }
 
   /// Check if user is currently authenticated
   bool get isAuthenticated => _apiService.authToken != null;
+
+  /// Check if a saved session exists
+  Future<bool> hasSavedSession() async {
+    await _sessionStorage.initialize();
+    return await _sessionStorage.hasSession();
+  }
 }
 

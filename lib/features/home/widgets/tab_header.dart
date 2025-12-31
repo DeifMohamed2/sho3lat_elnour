@@ -7,6 +7,7 @@ class TabHeader extends StatelessWidget {
   final VoidCallback onShowStudentSelector;
   final VoidCallback? onProfileTap;
   final VoidCallback? onNotificationTap;
+  final int unreadNotificationsCount;
 
   const TabHeader({
     super.key,
@@ -15,6 +16,7 @@ class TabHeader extends StatelessWidget {
     required this.onShowStudentSelector,
     this.onProfileTap,
     this.onNotificationTap,
+    this.unreadNotificationsCount = 0,
   });
 
   @override
@@ -99,28 +101,29 @@ class TabHeader extends StatelessWidget {
                           backgroundColor: Colors.white.withOpacity(0.2),
                         ),
                       ),
-                      Positioned(
-                        right: 8,
-                        top: 8,
-                        child: Container(
-                          width: 16,
-                          height: 16,
-                          decoration: const BoxDecoration(
-                            color: Colors.red,
-                            shape: BoxShape.circle,
-                          ),
-                          child: Center(
-                            child: Text(
-                              '3',
-                              style: AppTheme.tajawal(
-                                fontSize: 10,
-                                color: AppTheme.white,
-                                fontWeight: FontWeight.bold,
+                      if (unreadNotificationsCount > 0)
+                        Positioned(
+                          right: 8,
+                          top: 8,
+                          child: Container(
+                            width: 16,
+                            height: 16,
+                            decoration: const BoxDecoration(
+                              color: Colors.red,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Center(
+                              child: Text(
+                                unreadNotificationsCount > 9 ? '9+' : '$unreadNotificationsCount',
+                                style: AppTheme.tajawal(
+                                  fontSize: 10,
+                                  color: AppTheme.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
                           ),
                         ),
-                      ),
                     ],
                   ),
                 ],

@@ -1,121 +1,173 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/models/dashboard/dashboard_response.dart';
 import '../widgets/tab_header.dart';
 
 class HomeTab extends StatelessWidget {
   final Map<String, dynamic>? student;
+  final DashboardResponse? dashboardResponse;
   final VoidCallback onShowStudentSelector;
   final String title;
   final VoidCallback? onProfileTap;
   final Function(int)? onSwitchTab;
+  final Future<void> Function()? onRefresh;
 
   const HomeTab({
     super.key,
     this.student,
+    this.dashboardResponse,
     required this.onShowStudentSelector,
     required this.title,
     this.onProfileTap,
     this.onSwitchTab,
+    this.onRefresh,
   });
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          TabHeader(
-            student: student,
-            title: title,
-            onShowStudentSelector: onShowStudentSelector,
-            onProfileTap: onProfileTap,
-            onNotificationTap:
-                () => Navigator.of(context).pushNamed('/notifications'),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Today's Attendance Status
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: AppTheme.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 10,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.calendar_today,
-                            color: AppTheme.primaryBlue,
-                            size: 20,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            'حالة الحضور اليوم',
-                            style: AppTheme.tajawal(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: AppTheme.gray700,
+    final todayAttendance = dashboardResponse?.todayAttendance;
+    final notifications = dashboardResponse?.notifications;
+    final unreadCount = notifications?.unreadCount ?? 0;
+    
+    // Determine attendance status display
+    final isPresent = todayAttendance?.isPresent ?? false;
+    final isAbsent = todayAttendance?.isAbsent ?? false;
+    final isLate = todayAttendance?.isLate ?? false;
+    final attendanceStatus = todayAttendance?.statusArabic ?? 'غير متاح';
+    final entryTime = todayAttendance?.formattedEntryTime ?? '';
+    
+    // Determine attendance icon and colors
+    IconData attendanceIcon;
+    Color attendanceColor;
+    Color attendanceBgColor;
+    
+    if (isPresent) {
+      attendanceIcon = Icons.check_circle;
+      attendanceColor = Colors.green;
+      attendanceBgColor = Colors.green.shade100;
+    } else if (isAbsent) {
+      attendanceIcon = Icons.cancel;
+      attendanceColor = Colors.red;
+      attendanceBgColor = Colors.red.shade100;
+    } else if (isLate) {
+      attendanceIcon = Icons.access_time;
+      attendanceColor = Colors.orange;
+      attendanceBgColor = Colors.orange.shade100;
+    } else {
+      attendanceIcon = Icons.help_outline;
+      attendanceColor = AppTheme.gray400;
+      attendanceBgColor = AppTheme.gray100;
+    }
+
+    return RefreshIndicator(
+      onRefresh: onRefresh ?? () async {},
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            TabHeader(
+              student: student,
+              title: title,
+              onShowStudentSelector: onShowStudentSelector,
+              onProfileTap: onProfileTap,
+              onNotificationTap:
+                  () => Navigator.of(context).pushNamed('/notifications'),
+              unreadNotificationsCount: unreadCount,
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Today's Attendance Status
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: AppTheme.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 10,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.calendar_today,
+                              color: AppTheme.primaryBlue,
+                              size: 20,
                             ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          Container(
-                            width: 48,
-                            height: 48,
-                            decoration: BoxDecoration(
-                              color: Colors.green.shade100,
-                              shape: BoxShape.circle,
+                            const SizedBox(width: 8),
+                            Text(
+                              'حالة الحضور اليوم',
+                              style: AppTheme.tajawal(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: AppTheme.gray700,
+                              ),
                             ),
-                            child: const Icon(
-                              Icons.check_circle,
-                              color: Colors.green,
-                              size: 24,
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        Row(
+                          children: [
+                            Container(
+                              width: 48,
+                              height: 48,
+                              decoration: BoxDecoration(
+                                color: attendanceBgColor,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                attendanceIcon,
+                                color: attendanceColor,
+                                size: 24,
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'حاضر',
-                                  style: AppTheme.tajawal(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.green.shade700,
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    attendanceStatus,
+                                    style: AppTheme.tajawal(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                      color: attendanceColor,
+                                    ),
                                   ),
-                                ),
-                                Text(
-                                  'وقت الدخول: 7:15 صباحاً',
-                                  style: AppTheme.tajawal(
-                                    fontSize: 12,
-                                    color: AppTheme.gray400,
-                                  ),
-                                ),
-                              ],
+                                  if (entryTime.isNotEmpty)
+                                    Text(
+                                      'وقت الدخول: $entryTime',
+                                      style: AppTheme.tajawal(
+                                        fontSize: 12,
+                                        color: AppTheme.gray400,
+                                      ),
+                                    )
+                                  else if (todayAttendance == null)
+                                    Text(
+                                      'لم يتم تسجيل الحضور بعد',
+                                      style: AppTheme.tajawal(
+                                        fontSize: 12,
+                                        color: AppTheme.gray400,
+                                      ),
+                                    ),
+                                ],
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
-                    ],
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
-                ),
                 const SizedBox(height: 16),
                 // Quick Actions
                 Container(
@@ -172,8 +224,8 @@ class HomeTab extends StatelessWidget {
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
                               _buildQuickAction(
-                                iconPath: 'assets/icons/messages.png',
-                                label: 'الرسائل',
+                                iconPath: 'assets/icons/money.png',
+                                label: 'المالية',
                                 onTap: () => onSwitchTab?.call(4),
                               ),
                               _buildQuickAction(
@@ -236,29 +288,68 @@ class HomeTab extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(height: 12),
-                      _buildNotification(
-                        icon: Icons.check_circle,
-                        iconColor: Colors.blue,
-                        iconBg: Colors.blue.shade100,
-                        title: 'تم تسجيل حضور الطالب',
-                        time: 'منذ ساعة واحدة',
-                      ),
-                      const SizedBox(height: 12),
-                      _buildNotification(
-                        icon: Icons.warning_amber_rounded,
-                        iconColor: Colors.orange,
-                        iconBg: Colors.orange.shade100,
-                        title: 'رسالة جديدة من معلم الرياضيات',
-                        time: 'منذ ساعتين',
-                      ),
-                      const SizedBox(height: 12),
-                      _buildNotification(
-                        icon: Icons.school,
-                        iconColor: Colors.green,
-                        iconBg: Colors.green.shade100,
-                        title: 'نتائج اختبار العلوم متاحة الآن',
-                        time: 'منذ 3 ساعات',
-                      ),
+                      if (notifications?.recent.isEmpty ?? true)
+                        _buildNotification(
+                          icon: Icons.notifications_none,
+                          iconColor: AppTheme.gray400,
+                          iconBg: AppTheme.gray100,
+                          title: 'لا توجد إشعارات جديدة',
+                          time: '',
+                        )
+                      else
+                        ...notifications!.recent.take(3).map((notification) {
+                          IconData icon;
+                          Color iconColor;
+                          Color iconBg;
+                          
+                          switch (notification.category?.toLowerCase() ?? notification.type.toLowerCase()) {
+                            case 'attendance':
+                              if (notification.type == 'present') {
+                                icon = Icons.check_circle;
+                                iconColor = Colors.green;
+                                iconBg = Colors.green.shade100;
+                              } else if (notification.type == 'absent') {
+                                icon = Icons.cancel;
+                                iconColor = Colors.red;
+                                iconBg = Colors.red.shade100;
+                              } else {
+                                icon = Icons.access_time;
+                                iconColor = Colors.orange;
+                                iconBg = Colors.orange.shade100;
+                              }
+                              break;
+                            case 'message':
+                              icon = Icons.message;
+                              iconColor = Colors.blue;
+                              iconBg = Colors.blue.shade100;
+                              break;
+                            case 'payment':
+                              icon = Icons.payment;
+                              iconColor = Colors.purple;
+                              iconBg = Colors.purple.shade100;
+                              break;
+                            case 'certificate':
+                              icon = Icons.school;
+                              iconColor = Colors.teal;
+                              iconBg = Colors.teal.shade100;
+                              break;
+                            default:
+                              icon = Icons.notifications;
+                              iconColor = Colors.blue;
+                              iconBg = Colors.blue.shade100;
+                          }
+                          
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: _buildNotification(
+                              icon: icon,
+                              iconColor: iconColor,
+                              iconBg: iconBg,
+                              title: notification.title,
+                              time: notification.timeAgo,
+                            ),
+                          );
+                        }).toList(),
                     ],
                   ),
                 ),
@@ -268,7 +359,7 @@ class HomeTab extends StatelessWidget {
           const SizedBox(height: 20), // Bottom padding
         ],
       ),
-    );
+    ));
   }
 
   Widget _buildQuickAction({

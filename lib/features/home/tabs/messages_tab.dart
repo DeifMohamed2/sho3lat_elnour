@@ -6,6 +6,7 @@ class MessagesTab extends StatefulWidget {
   final VoidCallback? onShowStudentSelector;
   final String title;
   final VoidCallback? onProfileTap;
+  final Future<void> Function()? onRefresh;
 
   const MessagesTab({
     super.key,
@@ -13,6 +14,7 @@ class MessagesTab extends StatefulWidget {
     this.onShowStudentSelector,
     required this.title,
     this.onProfileTap,
+    this.onRefresh,
   });
 
   @override
@@ -100,8 +102,11 @@ class _MessagesTabState extends State<MessagesTab> {
   Widget build(BuildContext context) {
     return Directionality(
       textDirection: TextDirection.rtl,
-      child: SingleChildScrollView(
-        child: Column(
+      child: RefreshIndicator(
+        onRefresh: widget.onRefresh ?? () async {},
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Blue Header Section with Title and Filters
@@ -186,6 +191,7 @@ class _MessagesTabState extends State<MessagesTab> {
             ),
             const SizedBox(height: 20), // Bottom padding
           ],
+        ),
         ),
       ),
     );

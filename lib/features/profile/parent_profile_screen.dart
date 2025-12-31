@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/providers/dashboard_provider.dart';
 
 class ParentProfileScreen extends StatelessWidget {
   const ParentProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final parentData = {'name': 'أحمد محمد العلي', 'phone': '+966 50 123 4567'};
+    final dashboardProvider = DashboardProvider();
+    final parentName = dashboardProvider.parentName.isNotEmpty 
+        ? dashboardProvider.parentName 
+        : 'ولي الأمر';
+    final parentPhone = dashboardProvider.parentPhone;
+    final students = dashboardProvider.studentsMap;
 
     return Directionality(
       textDirection: TextDirection.rtl,
@@ -71,7 +77,7 @@ class ParentProfileScreen extends StatelessWidget {
                       child: Column(
                         children: [
                           Text(
-                            parentData['name'] as String,
+                            parentName,
                             style: AppTheme.tajawal(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
@@ -87,12 +93,13 @@ class ParentProfileScreen extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(height: 24),
-                          _buildContactInfo(
-                            Icons.phone,
-                            'رقم الهاتف',
-                            parentData['phone'] as String,
-                            Colors.blue,
-                          ),
+                          if (parentPhone.isNotEmpty)
+                            _buildContactInfo(
+                              Icons.phone,
+                              'رقم الهاتف',
+                              parentPhone,
+                              Colors.blue,
+                            ),
                         ],
                       ),
                     ),
@@ -135,65 +142,46 @@ class ParentProfileScreen extends StatelessWidget {
                                   ),
                                 ],
                               ),
-                              TextButton(
-                                onPressed:
-                                    () => Navigator.of(
-                                      context,
-                                    ).pushNamed('/manageChildren'),
-                                child: Text(
-                                  'إدارة الكل',
-                                  style: AppTheme.tajawal(
-                                    fontSize: 14,
-                                    color: AppTheme.primaryBlue,
-                                  ),
-                                ),
-                              ),
                             ],
                           ),
                           const SizedBox(height: 16),
-                          _buildChildCard(
-                            'محمد أحمد العلي',
-                            'الصف الخامس',
-                            '5-أ',
-                            '👦',
-                            () {
-                              Navigator.of(context).pushReplacementNamed(
-                                '/main',
-                                arguments: {
-                                  'student': {
-                                    'id': 1,
-                                    'name': 'محمد أحمد العلي',
-                                    'grade': 'الصف الخامس',
-                                    'class': '5-أ',
-                                    'avatar': '👦',
-                                    'studentId': 'STD-2024-1234',
-                                  },
-                                },
+                          if (students.isEmpty)
+                            Center(
+                              child: Text(
+                                'لا يوجد أبناء مسجلين',
+                                style: AppTheme.tajawal(
+                                  fontSize: 14,
+                                  color: AppTheme.gray500,
+                                ),
+                              ),
+                            )
+                          else
+                            ...students.asMap().entries.map((entry) {
+                              final index = entry.key;
+                              final student = entry.value;
+                              final isLast = index == students.length - 1;
+                              final avatar = index % 2 == 0 ? '👦' : '👧';
+                              
+                              return Column(
+                                children: [
+                                  _buildChildCard(
+                                    student['name'] ?? '',
+                                    student['grade'] ?? '',
+                                    student['class'] ?? '',
+                                    avatar,
+                                    () {
+                                      Navigator.of(context).pushReplacementNamed(
+                                        '/main',
+                                        arguments: {
+                                          'student': student,
+                                        },
+                                      );
+                                    },
+                                  ),
+                                  if (!isLast) const SizedBox(height: 12),
+                                ],
                               );
-                            },
-                          ),
-                          const SizedBox(height: 12),
-                          _buildChildCard(
-                            'فاطمة أحمد العلي',
-                            'الصف الثاني',
-                            '2-ب',
-                            '👧',
-                            () {
-                              Navigator.of(context).pushReplacementNamed(
-                                '/main',
-                                arguments: {
-                                  'student': {
-                                    'id': 2,
-                                    'name': 'فاطمة أحمد العلي',
-                                    'grade': 'الصف الثاني',
-                                    'class': '2-ب',
-                                    'avatar': '👧',
-                                    'studentId': 'STD-2024-5678',
-                                  },
-                                },
-                              );
-                            },
-                          ),
+                            }),
                         ],
                       ),
                     ),
@@ -224,13 +212,6 @@ class ParentProfileScreen extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(height: 16),
-                          _buildQuickAction(
-                            Icons.people,
-                            'إدارة الأبناء',
-                            () => Navigator.of(
-                              context,
-                            ).pushNamed('/manageChildren'),
-                          ),
                           _buildQuickAction(
                             Icons.settings,
                             'الإعدادات',
