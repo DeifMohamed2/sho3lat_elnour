@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/models/dashboard/dashboard_response.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../widgets/tab_header.dart';
 
 class HomeTab extends StatelessWidget {
@@ -25,22 +26,23 @@ class HomeTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final todayAttendance = dashboardResponse?.todayAttendance;
     final notifications = dashboardResponse?.notifications;
     final unreadCount = notifications?.unreadCount ?? 0;
-    
+
     // Determine attendance status display
     final isPresent = todayAttendance?.isPresent ?? false;
     final isAbsent = todayAttendance?.isAbsent ?? false;
     final isLate = todayAttendance?.isLate ?? false;
-    final attendanceStatus = todayAttendance?.statusArabic ?? 'غير متاح';
+    final attendanceStatus = todayAttendance?.statusArabic ?? l10n.notAvailable;
     final entryTime = todayAttendance?.formattedEntryTime ?? '';
-    
+
     // Determine attendance icon and colors
     IconData attendanceIcon;
     Color attendanceColor;
     Color attendanceBgColor;
-    
+
     if (isPresent) {
       attendanceIcon = Icons.check_circle;
       attendanceColor = Colors.green;
@@ -106,7 +108,7 @@ class HomeTab extends StatelessWidget {
                             ),
                             const SizedBox(width: 8),
                             Text(
-                              'حالة الحضور اليوم',
+                              l10n.todayAttendanceStatus,
                               style: AppTheme.tajawal(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
@@ -146,7 +148,7 @@ class HomeTab extends StatelessWidget {
                                   ),
                                   if (entryTime.isNotEmpty)
                                     Text(
-                                      'وقت الدخول: $entryTime',
+                                      '${l10n.entryTime} $entryTime',
                                       style: AppTheme.tajawal(
                                         fontSize: 12,
                                         color: AppTheme.gray400,
@@ -154,7 +156,7 @@ class HomeTab extends StatelessWidget {
                                     )
                                   else if (todayAttendance == null)
                                     Text(
-                                      'لم يتم تسجيل الحضور بعد',
+                                      l10n.noAttendanceRecorded,
                                       style: AppTheme.tajawal(
                                         fontSize: 12,
                                         color: AppTheme.gray400,
@@ -168,198 +170,200 @@ class HomeTab extends StatelessWidget {
                       ],
                     ),
                   ),
-                const SizedBox(height: 16),
-                // Quick Actions
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: AppTheme.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 10,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'الإجراءات السريعة',
-                        style: AppTheme.tajawal(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: AppTheme.gray700,
+                  const SizedBox(height: 16),
+                  // Quick Actions
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: AppTheme.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 10,
+                          offset: const Offset(0, 2),
                         ),
-                      ),
-                      const SizedBox(height: 16),
-                      Column(
-                        children: [
-                          // First Row - 3 items
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              _buildQuickAction(
-                                iconPath: 'assets/icons/check-mark.png',
-                                label: 'الحضور',
-                                onTap: () => onSwitchTab?.call(1),
-                              ),
-                              _buildQuickAction(
-                                iconPath: 'assets/icons/calendar.png',
-                                label: 'الجدول',
-                                onTap: () => onSwitchTab?.call(2),
-                              ),
-                              _buildQuickAction(
-                                iconPath: 'assets/icons/certificate.png',
-                                label: 'الشهادات',
-                                onTap: () => onSwitchTab?.call(3),
-                              ),
-                            ],
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          l10n.quickActions,
+                          style: AppTheme.tajawal(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: AppTheme.gray700,
                           ),
-                          const SizedBox(height: 16),
-                          // Second Row - 3 items
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              _buildQuickAction(
-                                iconPath: 'assets/icons/money.png',
-                                label: 'المالية',
-                                onTap: () => onSwitchTab?.call(4),
-                              ),
-                              _buildQuickAction(
-                                iconPath: 'assets/icons/settings.png',
-                                label: 'الإعدادات',
-                                onTap:
-                                    () => Navigator.of(
-                                      context,
-                                    ).pushNamed('/settings'),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-                // Notifications
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: AppTheme.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 10,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'الإشعارات الأخيرة',
-                            style: AppTheme.tajawal(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: AppTheme.gray700,
+                        ),
+                        const SizedBox(height: 16),
+                        Column(
+                          children: [
+                            // First Row - 3 items
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                _buildQuickAction(
+                                  iconPath: 'assets/icons/check-mark.png',
+                                  label: l10n.attendance,
+                                  onTap: () => onSwitchTab?.call(1),
+                                ),
+                                _buildQuickAction(
+                                  iconPath: 'assets/icons/calendar.png',
+                                  label: l10n.timetable,
+                                  onTap: () => onSwitchTab?.call(2),
+                                ),
+                                _buildQuickAction(
+                                  iconPath: 'assets/icons/certificate.png',
+                                  label: l10n.certificates,
+                                  onTap: () => onSwitchTab?.call(3),
+                                ),
+                              ],
                             ),
-                          ),
-                          TextButton(
-                            onPressed:
-                                () => Navigator.of(
-                                  context,
-                                ).pushNamed('/notifications'),
-                            child: Text(
-                              'عرض الكل',
+                            const SizedBox(height: 16),
+                            // Second Row - 3 items
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                _buildQuickAction(
+                                  iconPath: 'assets/icons/money.png',
+                                  label: l10n.financial,
+                                  onTap: () => onSwitchTab?.call(4),
+                                ),
+                                _buildQuickAction(
+                                  iconPath: 'assets/icons/settings.png',
+                                  label: l10n.settings,
+                                  onTap:
+                                      () => Navigator.of(
+                                        context,
+                                      ).pushNamed('/settings'),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  // Notifications
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: AppTheme.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 10,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              l10n.recentNotifications,
                               style: AppTheme.tajawal(
-                                fontSize: 14,
-                                color: AppTheme.primaryBlue,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: AppTheme.gray700,
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      if (notifications?.recent.isEmpty ?? true)
-                        _buildNotification(
-                          icon: Icons.notifications_none,
-                          iconColor: AppTheme.gray400,
-                          iconBg: AppTheme.gray100,
-                          title: 'لا توجد إشعارات جديدة',
-                          time: '',
-                        )
-                      else
-                        ...notifications!.recent.take(3).map((notification) {
-                          IconData icon;
-                          Color iconColor;
-                          Color iconBg;
-                          
-                          switch (notification.category?.toLowerCase() ?? notification.type.toLowerCase()) {
-                            case 'attendance':
-                              if (notification.type == 'present') {
-                                icon = Icons.check_circle;
-                                iconColor = Colors.green;
-                                iconBg = Colors.green.shade100;
-                              } else if (notification.type == 'absent') {
-                                icon = Icons.cancel;
-                                iconColor = Colors.red;
-                                iconBg = Colors.red.shade100;
-                              } else {
-                                icon = Icons.access_time;
-                                iconColor = Colors.orange;
-                                iconBg = Colors.orange.shade100;
-                              }
-                              break;
-                            case 'message':
-                              icon = Icons.message;
-                              iconColor = Colors.blue;
-                              iconBg = Colors.blue.shade100;
-                              break;
-                            case 'payment':
-                              icon = Icons.payment;
-                              iconColor = Colors.purple;
-                              iconBg = Colors.purple.shade100;
-                              break;
-                            case 'certificate':
-                              icon = Icons.school;
-                              iconColor = Colors.teal;
-                              iconBg = Colors.teal.shade100;
-                              break;
-                            default:
-                              icon = Icons.notifications;
-                              iconColor = Colors.blue;
-                              iconBg = Colors.blue.shade100;
-                          }
-                          
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 12),
-                            child: _buildNotification(
-                              icon: icon,
-                              iconColor: iconColor,
-                              iconBg: iconBg,
-                              title: notification.title,
-                              time: notification.timeAgo,
+                            TextButton(
+                              onPressed:
+                                  () => Navigator.of(
+                                    context,
+                                  ).pushNamed('/notifications'),
+                              child: Text(
+                                l10n.viewAll,
+                                style: AppTheme.tajawal(
+                                  fontSize: 14,
+                                  color: AppTheme.primaryBlue,
+                                ),
+                              ),
                             ),
-                          );
-                        }).toList(),
-                    ],
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        if (notifications?.recent.isEmpty ?? true)
+                          _buildNotification(
+                            icon: Icons.notifications_none,
+                            iconColor: AppTheme.gray400,
+                            iconBg: AppTheme.gray100,
+                            title: l10n.noNewNotifications,
+                            time: '',
+                          )
+                        else
+                          ...notifications!.recent.take(3).map((notification) {
+                            IconData icon;
+                            Color iconColor;
+                            Color iconBg;
+
+                            switch (notification.category?.toLowerCase() ??
+                                notification.type.toLowerCase()) {
+                              case 'attendance':
+                                if (notification.type == 'present') {
+                                  icon = Icons.check_circle;
+                                  iconColor = Colors.green;
+                                  iconBg = Colors.green.shade100;
+                                } else if (notification.type == 'absent') {
+                                  icon = Icons.cancel;
+                                  iconColor = Colors.red;
+                                  iconBg = Colors.red.shade100;
+                                } else {
+                                  icon = Icons.access_time;
+                                  iconColor = Colors.orange;
+                                  iconBg = Colors.orange.shade100;
+                                }
+                                break;
+                              case 'message':
+                                icon = Icons.message;
+                                iconColor = Colors.blue;
+                                iconBg = Colors.blue.shade100;
+                                break;
+                              case 'payment':
+                                icon = Icons.payment;
+                                iconColor = Colors.purple;
+                                iconBg = Colors.purple.shade100;
+                                break;
+                              case 'certificate':
+                                icon = Icons.school;
+                                iconColor = Colors.teal;
+                                iconBg = Colors.teal.shade100;
+                                break;
+                              default:
+                                icon = Icons.notifications;
+                                iconColor = Colors.blue;
+                                iconBg = Colors.blue.shade100;
+                            }
+
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 12),
+                              child: _buildNotification(
+                                icon: icon,
+                                iconColor: iconColor,
+                                iconBg: iconBg,
+                                title: notification.title,
+                                time: notification.timeAgo,
+                              ),
+                            );
+                          }),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          const SizedBox(height: 20), // Bottom padding
-        ],
+            const SizedBox(height: 20), // Bottom padding
+          ],
+        ),
       ),
-    ));
+    );
   }
 
   Widget _buildQuickAction({

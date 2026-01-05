@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/models/dashboard/dashboard_response.dart';
 import '../../../core/models/dashboard/attendance_record.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../widgets/tab_header.dart';
 
 class AttendanceTab extends StatefulWidget {
@@ -56,89 +57,92 @@ class _AttendanceTabState extends State<AttendanceTab> {
     }
   }
 
-  String _formatDate(DateTime date) {
-    final monthNames = [
-      '',
-      'يناير',
-      'فبراير',
-      'مارس',
-      'أبريل',
-      'مايو',
-      'يونيو',
-      'يوليو',
-      'أغسطس',
-      'سبتمبر',
-      'أكتوبر',
-      'نوفمبر',
-      'ديسمبر',
-    ];
-    return '${date.day} ${monthNames[date.month]} ${date.year}';
+  String _formatDate(DateTime date, AppLocalizations l10n) {
+    return '${date.day} ${l10n.getMonthName(date.month)} ${date.year}';
+  }
+
+  String _getLocalizedStatus(String statusKey, AppLocalizations l10n) {
+    switch (statusKey) {
+      case 'present':
+        return l10n.presentStatus;
+      case 'absent':
+        return l10n.absentStatus;
+      case 'late':
+        return l10n.lateStatus;
+      default:
+        return statusKey;
+    }
   }
 
   List<AttendanceRecord> _getFilteredRecords() {
     final monthlyAttendance = widget.dashboardResponse?.monthlyAttendance;
     final recentAttendance = widget.dashboardResponse?.recentAttendance ?? [];
-    
+
     // Combine records from monthly and recent attendance
     final recordsMap = <String, AttendanceRecord>{};
-    
+
     for (final record in monthlyAttendance?.records ?? []) {
       recordsMap[record.id] = record;
     }
     for (final record in recentAttendance) {
       recordsMap[record.id] = record;
     }
-    
+
     var records = recordsMap.values.toList();
-    
+
     // Sort by date descending
     records.sort((a, b) => b.date.compareTo(a.date));
-    
+
     // Apply filters
     if (_selectedStatus != null) {
       records = records.where((r) => r.statusKey == _selectedStatus).toList();
     }
-    
+
     if (_selectedDate != null) {
-      records = records.where((r) => 
-        r.date.year == _selectedDate!.year &&
-        r.date.month == _selectedDate!.month &&
-        r.date.day == _selectedDate!.day
-      ).toList();
+      records =
+          records
+              .where(
+                (r) =>
+                    r.date.year == _selectedDate!.year &&
+                    r.date.month == _selectedDate!.month &&
+                    r.date.day == _selectedDate!.day,
+              )
+              .toList();
     }
-    
+
     return records;
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final monthlyAttendance = widget.dashboardResponse?.monthlyAttendance;
     final filteredRecords = _getFilteredRecords();
+
+    // Calculate total attendance from all records
+    final monthlyAttendanceRecords = widget.dashboardResponse?.monthlyAttendance?.records ?? [];
+    final recentAttendance = widget.dashboardResponse?.recentAttendance ?? [];
     
+    // Combine all records to get totals
+    final allRecordsMap = <String, AttendanceRecord>{};
+    for (final record in monthlyAttendanceRecords) {
+      allRecordsMap[record.id] = record;
+    }
+    for (final record in recentAttendance) {
+      allRecordsMap[record.id] = record;
+    }
+    final allRecords = allRecordsMap.values.toList();
+    
+    // Calculate totals
     final stats = {
-      'present': monthlyAttendance?.present ?? 0,
-      'absent': monthlyAttendance?.absent ?? 0,
-      'late': monthlyAttendance?.late ?? 0,
+      'present': allRecords.where((r) => r.statusKey == 'present').length,
+      'absent': allRecords.where((r) => r.statusKey == 'absent').length,
+      'late': allRecords.where((r) => r.statusKey == 'late').length,
     };
 
     // Get current month name
     final now = DateTime.now();
-    final monthNames = [
-      '',
-      'يناير',
-      'فبراير',
-      'مارس',
-      'أبريل',
-      'مايو',
-      'يونيو',
-      'يوليو',
-      'أغسطس',
-      'سبتمبر',
-      'أكتوبر',
-      'نوفمبر',
-      'ديسمبر',
-    ];
-    final currentMonthName = '${monthNames[now.month]} ${now.year}';
+    final currentMonthName = '${l10n.getMonthName(now.month)} ${now.year}';
 
     return RefreshIndicator(
       onRefresh: widget.onRefresh ?? () async {},
@@ -154,7 +158,8 @@ class _AttendanceTabState extends State<AttendanceTab> {
               onProfileTap: widget.onProfileTap,
               onNotificationTap:
                   () => Navigator.of(context).pushNamed('/notifications'),
-              unreadNotificationsCount: widget.dashboardResponse?.notifications?.unreadCount ?? 0,
+              unreadNotificationsCount:
+                  widget.dashboardResponse?.notifications?.unreadCount ?? 0,
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
@@ -187,7 +192,7 @@ class _AttendanceTabState extends State<AttendanceTab> {
                             ),
                             const SizedBox(width: 8),
                             Text(
-                              'تصفية',
+                              l10n.filter,
                               style: AppTheme.tajawal(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
@@ -217,7 +222,7 @@ class _AttendanceTabState extends State<AttendanceTab> {
                                     value: _selectedStatus,
                                     isExpanded: true,
                                     hint: Text(
-                                      'جميع الحالات',
+                                      l10n.allStatuses,
                                       style: AppTheme.tajawal(
                                         fontSize: 14,
                                         color: AppTheme.gray500,
@@ -231,7 +236,7 @@ class _AttendanceTabState extends State<AttendanceTab> {
                                       DropdownMenuItem<String?>(
                                         value: null,
                                         child: Text(
-                                          'جميع الحالات',
+                                          l10n.allStatuses,
                                           style: AppTheme.tajawal(
                                             fontSize: 14,
                                             color: AppTheme.gray800,
@@ -241,7 +246,7 @@ class _AttendanceTabState extends State<AttendanceTab> {
                                       DropdownMenuItem<String>(
                                         value: 'present',
                                         child: Text(
-                                          'حضور',
+                                          l10n.present,
                                           style: AppTheme.tajawal(
                                             fontSize: 14,
                                             color: AppTheme.gray800,
@@ -251,7 +256,7 @@ class _AttendanceTabState extends State<AttendanceTab> {
                                       DropdownMenuItem<String>(
                                         value: 'absent',
                                         child: Text(
-                                          'غياب',
+                                          l10n.absent,
                                           style: AppTheme.tajawal(
                                             fontSize: 14,
                                             color: AppTheme.gray800,
@@ -261,7 +266,7 @@ class _AttendanceTabState extends State<AttendanceTab> {
                                       DropdownMenuItem<String>(
                                         value: 'late',
                                         child: Text(
-                                          'تأخير',
+                                          l10n.late,
                                           style: AppTheme.tajawal(
                                             fontSize: 14,
                                             color: AppTheme.gray800,
@@ -284,10 +289,11 @@ class _AttendanceTabState extends State<AttendanceTab> {
                                 onTap: () async {
                                   final DateTime? picked = await showDatePicker(
                                     context: context,
-                                    initialDate: _selectedDate ?? DateTime.now(),
+                                    initialDate:
+                                        _selectedDate ?? DateTime.now(),
                                     firstDate: DateTime(2020),
                                     lastDate: DateTime(2030),
-                                    locale: const Locale('ar', ''),
+                                    locale: Localizations.localeOf(context),
                                     builder: (context, child) {
                                       return Theme(
                                         data: Theme.of(context).copyWith(
@@ -335,8 +341,11 @@ class _AttendanceTabState extends State<AttendanceTab> {
                                       Expanded(
                                         child: Text(
                                           _selectedDate != null
-                                              ? _formatDate(_selectedDate!)
-                                              : 'اختر التاريخ',
+                                              ? _formatDate(
+                                                _selectedDate!,
+                                                l10n,
+                                              )
+                                              : l10n.selectDate,
                                           style: AppTheme.tajawal(
                                             fontSize: 14,
                                             color:
@@ -366,7 +375,8 @@ class _AttendanceTabState extends State<AttendanceTab> {
                             ),
                           ],
                         ),
-                        if (_selectedStatus != null || _selectedDate != null) ...[
+                        if (_selectedStatus != null ||
+                            _selectedDate != null) ...[
                           const SizedBox(height: 12),
                           Align(
                             alignment: Alignment.centerLeft,
@@ -379,7 +389,7 @@ class _AttendanceTabState extends State<AttendanceTab> {
                               },
                               icon: const Icon(Icons.clear, size: 16),
                               label: Text(
-                                'مسح التصفية',
+                                l10n.clearFilter,
                                 style: AppTheme.tajawal(
                                   fontSize: 12,
                                   color: AppTheme.primaryBlue,
@@ -406,7 +416,7 @@ class _AttendanceTabState extends State<AttendanceTab> {
                           icon: Icons.check_circle_outline_outlined,
                           iconColor: Colors.green,
                           iconBgColor: Colors.green.shade100,
-                          label: 'حضور',
+                          label: l10n.present,
                           value: stats['present'] ?? 0,
                         ),
                       ),
@@ -416,7 +426,7 @@ class _AttendanceTabState extends State<AttendanceTab> {
                           icon: Icons.cancel_outlined,
                           iconColor: Colors.red,
                           iconBgColor: Colors.red.shade100,
-                          label: 'غياب',
+                          label: l10n.absent,
                           value: stats['absent'] ?? 0,
                         ),
                       ),
@@ -430,7 +440,7 @@ class _AttendanceTabState extends State<AttendanceTab> {
                           icon: Icons.access_time_outlined,
                           iconColor: Colors.orange,
                           iconBgColor: Colors.orange.shade100,
-                          label: 'تأخير',
+                          label: l10n.late,
                           value: stats['late'] ?? 0,
                         ),
                       ),
@@ -477,7 +487,7 @@ class _AttendanceTabState extends State<AttendanceTab> {
                                   borderRadius: BorderRadius.circular(20),
                                 ),
                                 child: Text(
-                                  '${monthlyAttendance.formattedPercentage} حضور',
+                                  '${monthlyAttendance.formattedPercentage} ${l10n.attendance}',
                                   style: AppTheme.tajawal(
                                     fontSize: 12,
                                     fontWeight: FontWeight.w600,
@@ -502,7 +512,7 @@ class _AttendanceTabState extends State<AttendanceTab> {
                                   ),
                                   const SizedBox(height: 16),
                                   Text(
-                                    'لا توجد بيانات حضور',
+                                    l10n.noAttendanceData,
                                     style: AppTheme.tajawal(
                                       fontSize: 16,
                                       color: AppTheme.gray600,
@@ -513,7 +523,9 @@ class _AttendanceTabState extends State<AttendanceTab> {
                             ),
                           )
                         else
-                          ...filteredRecords.map((record) => _buildAttendanceRecord(record)),
+                          ...filteredRecords.map(
+                            (record) => _buildAttendanceRecord(record),
+                          ),
                       ],
                     ),
                   ),
@@ -559,19 +571,12 @@ class _AttendanceTabState extends State<AttendanceTab> {
                   color: iconBgColor,
                   shape: BoxShape.circle,
                 ),
-                child: Icon(
-                  icon,
-                  color: iconColor,
-                  size: 16,
-                ),
+                child: Icon(icon, color: iconColor, size: 16),
               ),
               const SizedBox(width: 8),
               Text(
                 label,
-                style: AppTheme.tajawal(
-                  fontSize: 14,
-                  color: AppTheme.gray600,
-                ),
+                style: AppTheme.tajawal(fontSize: 14, color: AppTheme.gray600),
               ),
             ],
           ),
@@ -590,9 +595,12 @@ class _AttendanceTabState extends State<AttendanceTab> {
   }
 
   Widget _buildAttendanceRecord(AttendanceRecord record) {
+    final l10n = AppLocalizations.of(context);
     final statusColor = _getStatusColor(record.statusKey);
     final statusBgColor = _getStatusBgColor(record.statusKey);
     final displayDate = record.entryTime ?? record.date;
+    final dayName = l10n.getDayName(record.date.weekday);
+    final isRtl = Directionality.of(context) == TextDirection.rtl;
 
     return Material(
       color: Colors.transparent,
@@ -609,10 +617,7 @@ class _AttendanceTabState extends State<AttendanceTab> {
         },
         borderRadius: BorderRadius.circular(12),
         child: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 12,
-            vertical: 12,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
           margin: const EdgeInsets.only(bottom: 8),
           child: Row(
             children: [
@@ -629,8 +634,8 @@ class _AttendanceTabState extends State<AttendanceTab> {
               // Day name
               Expanded(
                 child: Text(
-                  record.dayNameArabic,
-                  textAlign: TextAlign.right,
+                  dayName,
+                  textAlign: isRtl ? TextAlign.right : TextAlign.left,
                   style: AppTheme.tajawal(
                     fontSize: 14,
                     color: AppTheme.gray800,
@@ -641,10 +646,7 @@ class _AttendanceTabState extends State<AttendanceTab> {
               // Date
               Text(
                 '${displayDate.day}',
-                style: AppTheme.tajawal(
-                  fontSize: 14,
-                  color: AppTheme.gray500,
-                ),
+                style: AppTheme.tajawal(fontSize: 14, color: AppTheme.gray500),
               ),
               const SizedBox(width: 12),
               // Status label
@@ -658,7 +660,7 @@ class _AttendanceTabState extends State<AttendanceTab> {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
-                  record.statusArabic,
+                  _getLocalizedStatus(record.statusKey, l10n),
                   style: AppTheme.tajawal(
                     fontSize: 12,
                     fontWeight: FontWeight.w500,

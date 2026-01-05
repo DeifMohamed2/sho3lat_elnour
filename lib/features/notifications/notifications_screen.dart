@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/providers/notifications_provider.dart';
 import '../../core/models/dashboard/notifications_info.dart';
+import '../../core/localization/app_localizations.dart';
 import 'notification_details_screen.dart';
 
 class NotificationsScreen extends StatefulWidget {
@@ -107,9 +108,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: Scaffold(
+    final l10n = AppLocalizations.of(context);
+    return Scaffold(
         backgroundColor: AppTheme.backgroundLight,
         appBar: AppBar(
           leading: IconButton(
@@ -117,7 +117,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             onPressed: () => Navigator.of(context).pushReplacementNamed('/main', arguments: {'student': null}),
           ),
           title: Text(
-            'الإشعارات',
+            l10n.notifications,
             style: AppTheme.tajawal(
               fontSize: 24,
               fontWeight: FontWeight.bold,
@@ -153,7 +153,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   // New count (left side in RTL)
                   if (_notificationsProvider.unreadCount > 0)
                     Text(
-                      '${_notificationsProvider.unreadCount} إشعار جديد',
+                      l10n.newNotificationsCount(_notificationsProvider.unreadCount),
                       style: AppTheme.tajawal(
                         fontSize: 14,
                         color: AppTheme.white.withOpacity(0.9),
@@ -165,7 +165,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   TextButton(
                     onPressed: _notificationsProvider.unreadCount > 0 ? _markAllAsRead : null,
                     child: Text(
-                      'تعليم الكل كمقروء',
+                      l10n.markAllAsRead,
                       style: AppTheme.tajawal(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
@@ -181,11 +181,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           ),
         ),
         body: _buildBody(),
-      ),
     );
   }
 
   Widget _buildBody() {
+    final l10n = AppLocalizations.of(context);
     if (_notificationsProvider.isLoading && !_notificationsProvider.hasData) {
       return const Center(
         child: CircularProgressIndicator(
@@ -206,7 +206,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             ),
             const SizedBox(height: 16),
             Text(
-              _notificationsProvider.errorMessage ?? 'حدث خطأ',
+              _notificationsProvider.errorMessage ?? l10n.error,
               style: AppTheme.tajawal(
                 fontSize: 16,
                 color: AppTheme.gray600,
@@ -225,7 +225,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 ),
               ),
               child: Text(
-                'إعادة المحاولة',
+                l10n.retry,
                 style: AppTheme.tajawal(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
@@ -251,7 +251,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             ),
             const SizedBox(height: 16),
             Text(
-              'لا توجد إشعارات',
+              l10n.noNotifications,
               style: AppTheme.tajawal(
                 fontSize: 16,
                 color: AppTheme.gray600,

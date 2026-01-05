@@ -1,3 +1,6 @@
+import '../../localization/app_localizations.dart';
+import 'package:flutter/material.dart';
+
 class PaymentRecord {
   final String id;
   final double amount;
@@ -73,6 +76,31 @@ class PaymentRecord {
       'ديسمبر',
     ];
     return '${paymentDate.day} ${monthNames[paymentDate.month]} ${paymentDate.year}';
+  }
+
+  /// Get localized formatted payment date
+  String getLocalizedFormattedDate(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final monthName = l10n.getMonthName(paymentDate.month);
+    return '${paymentDate.day} $monthName ${paymentDate.year}';
+  }
+
+  /// Get localized payment method
+  String getLocalizedPaymentMethod(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final isArabic = Localizations.localeOf(context).languageCode == 'ar';
+    switch (paymentMethod.toLowerCase()) {
+      case 'cash':
+        return isArabic ? 'نقداً' : 'Cash';
+      case 'card':
+        return isArabic ? 'بطاقة' : 'Card';
+      case 'transfer':
+        return isArabic ? 'تحويل بنكي' : 'Bank Transfer';
+      case 'check':
+        return isArabic ? 'شيك' : 'Check';
+      default:
+        return paymentMethod;
+    }
   }
 }
 

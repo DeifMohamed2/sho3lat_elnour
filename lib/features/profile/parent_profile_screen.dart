@@ -1,22 +1,22 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/providers/dashboard_provider.dart';
+import '../../core/localization/app_localizations.dart';
 
 class ParentProfileScreen extends StatelessWidget {
   const ParentProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final dashboardProvider = DashboardProvider();
     final parentName = dashboardProvider.parentName.isNotEmpty 
         ? dashboardProvider.parentName 
-        : 'ولي الأمر';
+        : l10n.parent;
     final parentPhone = dashboardProvider.parentPhone;
     final students = dashboardProvider.studentsMap;
 
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: Scaffold(
+    return Scaffold(
         backgroundColor: AppTheme.backgroundLight,
         body: Column(
           children: [
@@ -44,7 +44,7 @@ class ParentProfileScreen extends StatelessWidget {
                     onPressed: () => Navigator.of(context).pop(),
                   ),
                   Text(
-                    'ملفي',
+                    l10n.myProfile,
                     style: AppTheme.tajawal(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -86,7 +86,7 @@ class ParentProfileScreen extends StatelessWidget {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            'ولي أمر',
+                            l10n.parent,
                             style: AppTheme.tajawal(
                               fontSize: 14,
                               color: AppTheme.gray500,
@@ -96,7 +96,7 @@ class ParentProfileScreen extends StatelessWidget {
                           if (parentPhone.isNotEmpty)
                             _buildContactInfo(
                               Icons.phone,
-                              'رقم الهاتف',
+                              l10n.phone,
                               parentPhone,
                               Colors.blue,
                             ),
@@ -133,7 +133,7 @@ class ParentProfileScreen extends StatelessWidget {
                                   ),
                                   const SizedBox(width: 8),
                                   Text(
-                                    'الأبناء',
+                                    l10n.children,
                                     style: AppTheme.tajawal(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w600,
@@ -148,7 +148,7 @@ class ParentProfileScreen extends StatelessWidget {
                           if (students.isEmpty)
                             Center(
                               child: Text(
-                                'لا يوجد أبناء مسجلين',
+                                l10n.noChildrenRegistered,
                                 style: AppTheme.tajawal(
                                   fontSize: 14,
                                   color: AppTheme.gray500,
@@ -204,7 +204,7 @@ class ParentProfileScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'إجراءات سريعة',
+                            l10n.quickActions,
                             style: AppTheme.tajawal(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
@@ -214,12 +214,12 @@ class ParentProfileScreen extends StatelessWidget {
                           const SizedBox(height: 16),
                           _buildQuickAction(
                             Icons.settings,
-                            'الإعدادات',
+                            l10n.settings,
                             () => Navigator.of(context).pushNamed('/settings'),
                           ),
                           _buildQuickAction(
                             Icons.info_outline,
-                            'حول التطبيق',
+                            l10n.aboutApp,
                             () => Navigator.of(context).pushNamed('/aboutApp'),
                           ),
                         ],
@@ -231,7 +231,6 @@ class ParentProfileScreen extends StatelessWidget {
             ),
           ],
         ),
-      ),
     );
   }
 

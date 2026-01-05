@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/models/dashboard/attendance_record.dart';
+import '../../core/localization/app_localizations.dart';
 
 class AttendanceDetailsScreen extends StatelessWidget {
   final Map<String, dynamic>? student;
@@ -68,78 +69,56 @@ class AttendanceDetailsScreen extends StatelessWidget {
     }
   }
 
-  String _getStatusArabic(String status) {
+  String _getStatusArabic(String status, AppLocalizations l10n) {
     switch (status.toLowerCase()) {
       case 'present':
-        return 'حاضر';
+        return l10n.presentStatus;
       case 'absent':
-        return 'غائب';
+        return l10n.absentStatus;
       case 'late':
-        return 'متأخر';
+        return l10n.lateStatus;
       case 'early_leave':
       case 'earlyleave':
-        return 'انصراف مبكر';
+        return l10n.earlyLeave;
       case 'permission':
-        return 'إذن';
+        return l10n.permission;
       default:
         return status;
     }
   }
 
-  String _formatTime(DateTime? dateTime) {
+  String _formatTime(DateTime? dateTime, AppLocalizations l10n) {
     if (dateTime == null) return '--:--';
     final hour = dateTime.hour;
     final minute = dateTime.minute.toString().padLeft(2, '0');
-    final period = hour < 12 ? 'صباحاً' : 'مساءً';
+    final period = hour < 12 ? l10n.morning : l10n.evening;
     final displayHour = hour > 12 ? hour - 12 : (hour == 0 ? 12 : hour);
     return '$displayHour:$minute $period';
   }
 
-  String _formatFullDate(DateTime date) {
-    final monthNames = [
-      '',
-      'يناير',
-      'فبراير',
-      'مارس',
-      'أبريل',
-      'مايو',
-      'يونيو',
-      'يوليو',
-      'أغسطس',
-      'سبتمبر',
-      'أكتوبر',
-      'نوفمبر',
-      'ديسمبر',
-    ];
-    final dayNames = [
-      'الإثنين',
-      'الثلاثاء',
-      'الأربعاء',
-      'الخميس',
-      'الجمعة',
-      'السبت',
-      'الأحد',
-    ];
-    final dayName = dayNames[date.weekday - 1];
-    return '$dayName، ${date.day} ${monthNames[date.month]} ${date.year}';
+  String _formatFullDate(DateTime date, AppLocalizations l10n) {
+    final dayName = l10n.getDayName(date.weekday);
+    final monthName = l10n.getMonthName(date.month);
+    return '$dayName، ${date.day} $monthName ${date.year}';
   }
 
-  String _calculateDuration(DateTime? entry, DateTime? exit) {
+  String _calculateDuration(DateTime? entry, DateTime? exit, AppLocalizations l10n) {
     if (entry == null || exit == null) return '--';
     final duration = exit.difference(entry);
     final hours = duration.inHours;
     final minutes = duration.inMinutes % 60;
     if (hours > 0 && minutes > 0) {
-      return '$hours ساعة و $minutes دقيقة';
+      return l10n.hoursAndMinutes(hours, minutes);
     } else if (hours > 0) {
-      return '$hours ساعة';
+      return l10n.hoursOnly(hours);
     } else {
-      return '$minutes دقيقة';
+      return l10n.minutesOnly(minutes);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     // Parse the record data from API
     AttendanceRecord? record;
     if (recordData != null) {
@@ -158,15 +137,13 @@ class AttendanceDetailsScreen extends StatelessWidget {
     final statusColor = _getStatusColor(status);
     final statusBgColor = _getStatusBgColor(status);
     final statusIcon = _getStatusIcon(status);
-    final statusArabic = _getStatusArabic(status);
+    final statusArabic = _getStatusArabic(status, l10n);
 
     final entryTime = record?.entryTime;
     final exitTime = record?.exitTime;
     final notes = record?.notes;
 
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: Scaffold(
+    return Scaffold(
         backgroundColor: AppTheme.backgroundLight,
         body: Column(
           children: [
@@ -194,7 +171,7 @@ class AttendanceDetailsScreen extends StatelessWidget {
                         onPressed: () => Navigator.of(context).pop(),
                       ),
                       Text(
-                        'تفاصيل الحضور',
+                        l10n.attendanceDetails,
                         style: AppTheme.tajawal(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
@@ -216,7 +193,7 @@ class AttendanceDetailsScreen extends StatelessWidget {
                       ),
                     ),
                     child: Text(
-                      _formatFullDate(displayDate),
+                      _formatFullDate(displayDate, l10n),
                       style: AppTheme.tajawal(
                         fontSize: 14,
                         color: AppTheme.white,
@@ -304,7 +281,7 @@ class AttendanceDetailsScreen extends StatelessWidget {
                               const Icon(Icons.access_time, color: AppTheme.primaryBlue, size: 20),
                               const SizedBox(width: 8),
                               Text(
-                                'تفاصيل الوقت',
+                                l10n.timeDetails,
                                 style: AppTheme.tajawal(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
@@ -316,25 +293,25 @@ class AttendanceDetailsScreen extends StatelessWidget {
                           const SizedBox(height: 16),
                           _buildTimeDetail(
                             Icons.login,
-                            'وقت الدخول',
-                            'دخول إلى المدرسة',
-                            _formatTime(entryTime),
+                            l10n.entryTimeLabel,
+                            l10n.schoolEntry,
+                            _formatTime(entryTime, l10n),
                             Colors.green,
                           ),
                           const SizedBox(height: 12),
                           _buildTimeDetail(
                             Icons.logout,
-                            'وقت الانصراف',
-                            'خروج من المدرسة',
-                            _formatTime(exitTime),
+                            l10n.exitTime,
+                            l10n.schoolExit,
+                            _formatTime(exitTime, l10n),
                             Colors.orange,
                           ),
                           const SizedBox(height: 12),
                           _buildTimeDetail(
                             Icons.timer,
-                            'المدة الإجمالية',
-                            'وقت البقاء في المدرسة',
-                            _calculateDuration(entryTime, exitTime),
+                            l10n.totalDuration,
+                            l10n.timeAtSchool,
+                            _calculateDuration(entryTime, exitTime, l10n),
                             Colors.blue,
                           ),
                         ],
@@ -363,7 +340,7 @@ class AttendanceDetailsScreen extends StatelessWidget {
                               const Icon(Icons.note, color: AppTheme.primaryBlue, size: 20),
                               const SizedBox(width: 8),
                               Text(
-                                'ملاحظات',
+                                l10n.notes,
                                 style: AppTheme.tajawal(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
@@ -374,7 +351,7 @@ class AttendanceDetailsScreen extends StatelessWidget {
                           ),
                           const SizedBox(height: 12),
                           Text(
-                            notes?.isNotEmpty == true ? notes! : 'لا توجد ملاحظات',
+                            notes?.isNotEmpty == true ? notes! : l10n.noNotes,
                             style: AppTheme.tajawal(
                               fontSize: 14,
                               color: notes?.isNotEmpty == true ? AppTheme.gray600 : AppTheme.gray400,
@@ -390,7 +367,6 @@ class AttendanceDetailsScreen extends StatelessWidget {
             ),
           ],
         ),
-      ),
     );
   }
 

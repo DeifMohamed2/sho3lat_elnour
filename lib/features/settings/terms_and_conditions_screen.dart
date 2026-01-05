@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/localization/app_localizations.dart';
 
 class TermsAndConditionsScreen extends StatelessWidget {
   const TermsAndConditionsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: Scaffold(
+    final l10n = AppLocalizations.of(context);
+    return Scaffold(
         backgroundColor: AppTheme.backgroundLight,
         appBar: AppBar(
           leading: IconButton(
@@ -16,7 +16,7 @@ class TermsAndConditionsScreen extends StatelessWidget {
             onPressed: () => Navigator.of(context).pop(),
           ),
           title: Text(
-            'الشروط والأحكام',
+            l10n.termsAndConditions,
             style: AppTheme.tajawal(
               fontSize: 20,
               fontWeight: FontWeight.bold,
@@ -64,7 +64,7 @@ class TermsAndConditionsScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'الشروط والأحكام',
+                      l10n.termsAndConditions,
                       style: AppTheme.tajawal(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -73,7 +73,7 @@ class TermsAndConditionsScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'آخر تحديث: ديسمبر 2025',
+                      l10n.lastUpdate,
                       style: AppTheme.tajawal(
                         fontSize: 12,
                         color: AppTheme.gray500,
@@ -81,33 +81,28 @@ class TermsAndConditionsScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 24),
                     _buildSection(
-                      title: '1. القبول بالشروط',
-                      content:
-                          'باستخدامك تطبيق "مدارس شعلة النور"، فإنك تقبل وتوافق على الالتزام بهذه الشروط والأحكام. إذا كنت لا توافق على أي جزء من هذه الشروط، فيرجى عدم استخدام التطبيق.',
+                      title: l10n.termsSection1Title,
+                      content: l10n.termsSection1Content,
                     ),
                     const SizedBox(height: 20),
                     _buildSection(
-                      title: '2. استخدام التطبيق',
-                      content:
-                          'يُسمح لك باستخدام تطبيق "مدارس شعلة النور" للأغراض التعليمية فقط. يجب عليك استخدام التطبيق بطريقة قانونية ووفقاً لهذه الشروط. يُمنع استخدام التطبيق لأي غرض غير قانوني أو غير مصرح به.',
+                      title: l10n.termsSection2Title,
+                      content: l10n.termsSection2Content,
                     ),
                     const SizedBox(height: 20),
                     _buildSection(
-                      title: '3. الحساب والمعلومات',
-                      content:
-                          'أنت مسؤول عن الحفاظ على سرية معلومات حسابك وكلمة المرور. يجب عليك إبلاغنا فوراً عن أي استخدام غير مصرح به لحسابك. نلتزم بحماية خصوصية معلوماتك وفقاً لسياسة الخصوصية الخاصة بنا.',
+                      title: l10n.termsSection3Title,
+                      content: l10n.termsSection3Content,
                     ),
                     const SizedBox(height: 20),
                     _buildSection(
-                      title: '4. المحتوى والبيانات',
-                      content:
-                          'جميع المحتويات والبيانات المعروضة في التطبيق مملوكة للمدرسة أو لطرف ثالث مرخص. لا يجوز نسخ أو توزيع أو تعديل أي محتوى دون إذن كتابي.',
+                      title: l10n.termsSection4Title,
+                      content: l10n.termsSection4Content,
                     ),
                     const SizedBox(height: 20),
                     _buildSection(
-                      title: '5. التعديلات',
-                      content:
-                          'نحتفظ بالحق في تعديل أو تحديث هذه الشروط والأحكام في أي وقت. سيتم إشعارك بأي تغييرات جوهرية من خلال التطبيق. استمرار استخدامك للتطبيق بعد التعديلات يعني موافقتك على الشروط المحدثة.',
+                      title: l10n.termsSection5Title,
+                      content: l10n.termsSection5Content,
                     ),
                   ],
                 ),
@@ -116,7 +111,7 @@ class TermsAndConditionsScreen extends StatelessWidget {
             ],
           ),
         ),
-      ),
+
     );
   }
 

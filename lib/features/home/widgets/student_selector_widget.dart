@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/localization/app_localizations.dart';
 
 class StudentSelectorWidget extends StatelessWidget {
   final Map<String, dynamic>? currentStudent;
@@ -56,66 +57,69 @@ class StudentSelectorWidget extends StatelessWidget {
                 ),
               ],
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Header
-                Container(
-                  padding: const EdgeInsets.all(24),
-                  decoration: const BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(color: AppTheme.borderGray, width: 1),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.close),
-                        onPressed: onClose,
-                        style: IconButton.styleFrom(
-                          backgroundColor: AppTheme.gray200,
+            child: Builder(
+              builder: (context) {
+                final l10n = AppLocalizations.of(context);
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Header
+                    Container(
+                      padding: const EdgeInsets.all(24),
+                      decoration: const BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(color: AppTheme.borderGray, width: 1),
                         ),
                       ),
-                      Text(
-                        'اختر الطالب',
-                        style: AppTheme.tajawal(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: AppTheme.gray800,
-                        ),
-                      ),
-                      const SizedBox(width: 48),
-                    ],
-                  ),
-                ),
-                // Students List
-                Flexible(
-                  child: studentsList.isEmpty
-                      ? Padding(
-                          padding: const EdgeInsets.all(24),
-                          child: Center(
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  Icons.person_off,
-                                  size: 48,
-                                  color: AppTheme.gray400,
-                                ),
-                                const SizedBox(height: 16),
-                                Text(
-                                  'لا يوجد طلاب',
-                                  style: AppTheme.tajawal(
-                                    fontSize: 16,
-                                    color: AppTheme.gray600,
-                                  ),
-                                ),
-                              ],
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.close),
+                            onPressed: onClose,
+                            style: IconButton.styleFrom(
+                              backgroundColor: AppTheme.gray200,
                             ),
                           ),
-                        )
-                      : ListView.builder(
+                          Text(
+                            l10n.selectStudent,
+                            style: AppTheme.tajawal(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: AppTheme.gray800,
+                            ),
+                          ),
+                          const SizedBox(width: 48),
+                        ],
+                      ),
+                    ),
+                    // Students List
+                    Flexible(
+                      child: studentsList.isEmpty
+                          ? Padding(
+                              padding: const EdgeInsets.all(24),
+                              child: Center(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.person_off,
+                                      size: 48,
+                                      color: AppTheme.gray400,
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Text(
+                                      l10n.noStudents,
+                                      style: AppTheme.tajawal(
+                                        fontSize: 16,
+                                        color: AppTheme.gray600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            )
+                          : ListView.builder(
                           shrinkWrap: true,
                           padding: const EdgeInsets.all(24),
                           itemCount: studentsList.length,
@@ -195,7 +199,7 @@ class StudentSelectorWidget extends StatelessWidget {
                                                     borderRadius: BorderRadius.circular(8),
                                                   ),
                                                   child: Text(
-                                                    'محظور',
+                                                    l10n.blocked,
                                                     style: AppTheme.tajawal(
                                                       fontSize: 10,
                                                       fontWeight: FontWeight.w600,
@@ -233,6 +237,8 @@ class StudentSelectorWidget extends StatelessWidget {
                         ),
                 ),
               ],
+            );
+              },
             ),
           ),
         ),

@@ -1,18 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/models/auth/login_request.dart';
 import '../../core/models/auth/api_error.dart';
 import '../../core/utils/fcm_helper.dart';
+import '../../core/localization/app_localizations.dart';
+import '../../core/providers/locale_provider.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _phoneController = TextEditingController();
   final _studentCodeController = TextEditingController();
@@ -81,7 +84,9 @@ class _LoginScreenState extends State<LoginScreen> {
       if (fcmToken != null) {
         print('✅ [LOGIN] FCM token retrieved: ${fcmToken.substring(0, 20)}...');
       } else {
-        print('⚠️ [LOGIN] FCM token not available (Firebase Messaging may not be integrated)');
+        print(
+          '⚠️ [LOGIN] FCM token not available (Firebase Messaging may not be integrated)',
+        );
       }
 
       final loginRequest = LoginRequest(
@@ -94,16 +99,21 @@ class _LoginScreenState extends State<LoginScreen> {
       print('📝 [LOGIN] Request details:');
       print('   - Phone: $phoneNumber');
       print('   - Student Code: $studentCode');
-      print('   - FCM Token: ${fcmToken != null ? "Provided" : "Not provided"}');
+      print(
+        '   - FCM Token: ${fcmToken != null ? "Provided" : "Not provided"}',
+      );
 
       final loginResponse = await _authService.login(loginRequest);
-      
+
       print('✅ [LOGIN] Login API call successful');
 
       // Login successful - navigate to main screen
       // Use the student from the response, or the first student if available
-      final student = loginResponse.student ?? 
-          (loginResponse.students.isNotEmpty ? loginResponse.students.first : null);
+      final student =
+          loginResponse.student ??
+          (loginResponse.students.isNotEmpty
+              ? loginResponse.students.first
+              : null);
 
       print('👤 [LOGIN] Processing student data...');
       print('👤 [LOGIN] Selected student: ${student?.name ?? "None"}');
@@ -130,22 +140,29 @@ class _LoginScreenState extends State<LoginScreen> {
         print('   - Class: ${studentMap['class']}');
 
         // Store all students for student selector
-        final allStudents = loginResponse.students
-            .map((s) => {
-                  'id': s.id,
-                  'name': s.name,
-                  'code': s.code,
-                  'class': s.classInfo?.className ?? '',
-                  'grade': s.classInfo?.academicLevel ?? '',
-                  'section': s.classInfo?.section ?? '',
-                  'totalSchoolFees': s.totalSchoolFees,
-                  'totalPaid': s.totalPaid,
-                  'remainingBalance': s.remainingBalance,
-                })
-            .toList();
+        final allStudents =
+            loginResponse.students
+                .map(
+                  (s) => {
+                    'id': s.id,
+                    'name': s.name,
+                    'code': s.code,
+                    'class': s.classInfo?.className ?? '',
+                    'grade': s.classInfo?.academicLevel ?? '',
+                    'section': s.classInfo?.section ?? '',
+                    'totalSchoolFees': s.totalSchoolFees,
+                    'totalPaid': s.totalPaid,
+                    'remainingBalance': s.remainingBalance,
+                  },
+                )
+                .toList();
 
-        print('👥 [LOGIN] All students processed: ${allStudents.length} students');
-        print('🎫 [LOGIN] Auth token: ${loginResponse.token.substring(0, 20)}...');
+        print(
+          '👥 [LOGIN] All students processed: ${allStudents.length} students',
+        );
+        print(
+          '🎫 [LOGIN] Auth token: ${loginResponse.token.substring(0, 20)}...',
+        );
 
         // Create parent data from the first student's name pattern
         // Assuming parent's name is derived from student's name (e.g., محمد أحمد العلي -> أحمد محمد العلي)
@@ -155,8 +172,10 @@ class _LoginScreenState extends State<LoginScreen> {
           'phone': phoneNumber,
           'role': 'ولي أمر',
         };
-        
-        print('👨‍👩‍👧‍👦 [LOGIN] Parent data: ${parentData['name']} - ${parentData['phone']}');
+
+        print(
+          '👨‍👩‍👧‍👦 [LOGIN] Parent data: ${parentData['name']} - ${parentData['phone']}',
+        );
 
         // Save session to persistent storage
         print('💾 [LOGIN] Saving session to persistent storage...');
@@ -166,11 +185,13 @@ class _LoginScreenState extends State<LoginScreen> {
           students: allStudents,
           parent: parentData,
         );
-        
+
         if (sessionSaved) {
           print('✅ [LOGIN] Session saved successfully');
         } else {
-          print('⚠️ [LOGIN] Warning: Failed to save session, but continuing...');
+          print(
+            '⚠️ [LOGIN] Warning: Failed to save session, but continuing...',
+          );
         }
 
         if (mounted) {
@@ -198,7 +219,7 @@ class _LoginScreenState extends State<LoginScreen> {
     } catch (e) {
       print('❌ [LOGIN] Login failed with unexpected error: $e');
       if (mounted) {
-        _showErrorSnackBar('حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى');
+        _showErrorSnackBar(AppLocalizations.of(context).unexpectedError);
       }
     } finally {
       print('🏁 [LOGIN] Login process finished');
@@ -228,303 +249,367 @@ class _LoginScreenState extends State<LoginScreen> {
         backgroundColor: Colors.red,
         duration: const Duration(seconds: 4),
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final screenHeight = MediaQuery.of(context).size.height;
     final screenWidth = MediaQuery.of(context).size.width;
+    final isRtl = Directionality.of(context) == TextDirection.rtl;
 
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: Scaffold(
-        body: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [AppTheme.primaryBlue, AppTheme.primaryBlueDark],
-            ),
+    return Scaffold(
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [AppTheme.primaryBlue, AppTheme.primaryBlueDark],
           ),
-          child: SafeArea(
-            child: Stack(
-              children: [
-                // Logo at the top
-                Positioned(
-                  top: screenHeight * 0.05,
-                  left: 0,
-                  right: 0,
-                  child: Column(
-                    children: [
-                      // Graduation cap icon in white circle
-                      Container(
-                        width: 100,
-                        height: 100,
-                        decoration: const BoxDecoration(
-                          color: Colors.transparent,
-                          shape: BoxShape.circle,
-                        ),
-                        child: Image.asset(
-                          'assets/icons/logo-madrasty.png',
-                          width: 90,
-                          height: 90,
-                        ),
+        ),
+        child: SafeArea(
+          child: Stack(
+            children: [
+              // Language Toggle Button at top-right
+              Positioned(
+                top: 16,
+                right: 16,
+                child: Material(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(12),
+                  child: InkWell(
+                    onTap: () async {
+                      final currentLocale = ref.read(localeProvider).languageCode;
+                      final newLocale = currentLocale == 'ar' ? 'en' : 'ar';
+                      await ref.read(localeProvider.notifier).setLocale(newLocale);
+                      
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              newLocale == 'ar' 
+                                  ? 'تم التغيير إلى العربية'
+                                  : 'Changed to English',
+                              style: AppTheme.tajawal(
+                                fontSize: 14,
+                                color: AppTheme.white,
+                              ),
+                            ),
+                            backgroundColor: AppTheme.primaryBlue,
+                            duration: const Duration(seconds: 2),
+                            behavior: SnackBarBehavior.floating,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                        );
+                      }
+                    },
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 8,
                       ),
-                      const SizedBox(height: 10),
-                      // App Name
-                      Text(
-                        'مدارس شعلة النور',
-                        style: AppTheme.tajawal(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                          color: AppTheme.white,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      // Subtitle
-                      Text(
-                        'تطبيق أولياء الأمور',
-                        style: AppTheme.tajawal(
-                          fontSize: 16,
-                          fontWeight: FontWeight.normal,
-                          color: AppTheme.lightBlue,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                // White Form Card (Fixed, not scrollable)
-                Positioned(
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  child: Container(
-                    width: double.infinity,
-                    constraints: BoxConstraints(maxHeight: screenHeight * 0.65),
-                    decoration: const BoxDecoration(
-                      color: AppTheme.backgroundLight,
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(32),
-                        topRight: Radius.circular(32),
-                      ),
-                    ),
-                    padding: EdgeInsets.symmetric(
-                      horizontal: screenWidth * 0.06,
-                      vertical: 24,
-                    ),
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
+                      child: Row(
                         mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          // Welcome Message
-                          Text(
-                            'أهلاً بك',
-                            style: AppTheme.tajawal(
-                              fontSize: 28,
-                              fontWeight: FontWeight.bold,
-                              color: AppTheme.gray800,
-                            ),
-                            textAlign: TextAlign.right,
+                          Icon(
+                            Icons.language,
+                            color: AppTheme.white,
+                            size: 20,
                           ),
-                          const SizedBox(height: 8),
-                          // Instructional Text
+                          const SizedBox(width: 6),
                           Text(
-                            'قم بتسجيل الدخول لمتابعة أداء أبنائك الدراسي',
+                            isRtl ? 'EN' : 'AR',
                             style: AppTheme.tajawal(
                               fontSize: 14,
-                              fontWeight: FontWeight.normal,
-                              color: AppTheme.gray500,
+                              fontWeight: FontWeight.w600,
+                              color: AppTheme.white,
                             ),
-                            textAlign: TextAlign.right,
-                          ),
-                          const SizedBox(height: 20),
-                          // Phone Number Field
-                          Text(
-                            'رقم الجوال',
-                            style: AppTheme.tajawal(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                              color: AppTheme.gray700,
-                            ),
-                            textAlign: TextAlign.right,
-                          ),
-                          const SizedBox(height: 8),
-                          TextFormField(
-                            controller: _phoneController,
-                            keyboardType: TextInputType.phone,
-                            textDirection: TextDirection.ltr,
-                            onChanged: (_) => _validateForm(),
-                            decoration: InputDecoration(
-                              hintText: '01xxxxxxxxx',
-                              hintStyle: AppTheme.tajawal(
-                                color: AppTheme.textGray,
-                              ),
-                              prefixIcon: const Icon(
-                                Icons.phone_outlined,
-                                color: AppTheme.textGray,
-                              ),
-                              filled: true,
-                              fillColor: AppTheme.white,
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(16),
-                                borderSide: const BorderSide(
-                                  color: AppTheme.borderGray,
-                                  width: 2,
-                                ),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(16),
-                                borderSide: const BorderSide(
-                                  color: AppTheme.borderGray,
-                                  width: 2,
-                                ),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(16),
-                                borderSide: const BorderSide(
-                                  color: AppTheme.primaryBlue,
-                                  width: 2,
-                                ),
-                              ),
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 16,
-                              ),
-                            ),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'الرجاء إدخال رقم الجوال';
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 16),
-                          // Student Code Field
-                          Text(
-                            'كود الطالب',
-                            style: AppTheme.tajawal(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                              color: AppTheme.gray700,
-                            ),
-                            textAlign: TextAlign.right,
-                          ),
-                          const SizedBox(height: 8),
-                          TextFormField(
-                            controller: _studentCodeController,
-                            keyboardType: TextInputType.number,
-                            textDirection: TextDirection.ltr,
-                            onChanged: (_) => _validateForm(),
-                            decoration: InputDecoration(
-                              hintText: 'أدخل كود الطالب',
-                              hintStyle: AppTheme.tajawal(
-                                color: AppTheme.textGray,
-                              ),
-                              prefixIcon: const Icon(
-                                Icons.badge_outlined,
-                                color: AppTheme.textGray,
-                              ),
-                              filled: true,
-                              fillColor: Colors.white,
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(16),
-                                borderSide: const BorderSide(
-                                  color: AppTheme.borderGray,
-                                  width: 2,
-                                ),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(16),
-                                borderSide: const BorderSide(
-                                  color: AppTheme.borderGray,
-                                  width: 2,
-                                ),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(16),
-                                borderSide: const BorderSide(
-                                  color: AppTheme.primaryBlue,
-                                  width: 2,
-                                ),
-                              ),
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 16,
-                              ),
-                            ),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'الرجاء إدخال كود الطالب';
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 20),
-                          // Login Button
-                          SizedBox(
-                            height: 50,
-                            child: ElevatedButton(
-                              onPressed: (_isButtonEnabled && !_isLoading)
-                                  ? _handleLogin
-                                  : null,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor:
-                                    (_isButtonEnabled && !_isLoading)
-                                        ? AppTheme.primaryBlue
-                                        : AppTheme.gray300,
-                                foregroundColor: AppTheme.white,
-                                disabledBackgroundColor: AppTheme.gray300,
-                                disabledForegroundColor: AppTheme.white,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                                elevation: 0,
-                              ),
-                              child: _isLoading
-                                  ? SizedBox(
-                                      height: 20,
-                                      width: 20,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        valueColor: AlwaysStoppedAnimation<Color>(
-                                          AppTheme.white,
-                                        ),
-                                      ),
-                                    )
-                                  : Text(
-                                      'تسجيل الدخول',
-                                      style: AppTheme.tajawal(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          // Bottom Text
-                          Text(
-                            'للحصول على حساب جديد تواصل مع إدارة المدرسة',
-                            style: AppTheme.tajawal(
-                              fontSize: 12,
-                              fontWeight: FontWeight.normal,
-                              color: AppTheme.gray400,
-                            ),
-                            textAlign: TextAlign.center,
                           ),
                         ],
                       ),
                     ),
                   ),
                 ),
-              ],
-            ),
+              ),
+              // Logo at the top
+              Positioned(
+                top: screenHeight * 0.05,
+                left: 0,
+                right: 0,
+                child: Column(
+                  children: [
+                    // Graduation cap icon in white circle
+                    Container(
+                      width: 100,
+                      height: 100,
+                      decoration: const BoxDecoration(
+                        color: Colors.transparent,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Image.asset(
+                        'assets/icons/logo-madrasty.png',
+                        width: 90,
+                        height: 90,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    // App Name
+                    Text(
+                      l10n.appTitle,
+                      style: AppTheme.tajawal(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.white,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    // Subtitle
+                    Text(
+                      l10n.parentApp,
+                      style: AppTheme.tajawal(
+                        fontSize: 16,
+                        fontWeight: FontWeight.normal,
+                        color: AppTheme.lightBlue,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // White Form Card (Fixed, not scrollable)
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: Container(
+                  width: double.infinity,
+                  constraints: BoxConstraints(maxHeight: screenHeight * 0.65),
+                  decoration: const BoxDecoration(
+                    color: AppTheme.backgroundLight,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(32),
+                      topRight: Radius.circular(32),
+                    ),
+                  ),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: screenWidth * 0.06,
+                    vertical: 24,
+                  ),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        // Welcome Message
+                        Text(
+                          l10n.welcome,
+                          style: AppTheme.tajawal(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.gray800,
+                          ),
+                          textAlign: isRtl ? TextAlign.right : TextAlign.left,
+                        ),
+                        const SizedBox(height: 8),
+                        // Instructional Text
+                        Text(
+                          l10n.loginSubtitle,
+                          style: AppTheme.tajawal(
+                            fontSize: 14,
+                            fontWeight: FontWeight.normal,
+                            color: AppTheme.gray500,
+                          ),
+                          textAlign: isRtl ? TextAlign.right : TextAlign.left,
+                        ),
+                        const SizedBox(height: 20),
+                        // Phone Number Field
+                        Text(
+                          l10n.phoneNumber,
+                          style: AppTheme.tajawal(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: AppTheme.gray700,
+                          ),
+                          textAlign: isRtl ? TextAlign.right : TextAlign.left,
+                        ),
+                        const SizedBox(height: 8),
+                        TextFormField(
+                          controller: _phoneController,
+                          keyboardType: TextInputType.phone,
+                          textDirection: TextDirection.ltr,
+                          onChanged: (_) => _validateForm(),
+                          decoration: InputDecoration(
+                            hintText: '01xxxxxxxxx',
+                            hintStyle: AppTheme.tajawal(
+                              color: AppTheme.textGray,
+                            ),
+                            prefixIcon: const Icon(
+                              Icons.phone_outlined,
+                              color: AppTheme.textGray,
+                            ),
+                            filled: true,
+                            fillColor: AppTheme.white,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide: const BorderSide(
+                                color: AppTheme.borderGray,
+                                width: 2,
+                              ),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide: const BorderSide(
+                                color: AppTheme.borderGray,
+                                width: 2,
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide: const BorderSide(
+                                color: AppTheme.primaryBlue,
+                                width: 2,
+                              ),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 16,
+                            ),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return l10n.pleaseEnterPhone;
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        // Student Code Field
+                        Text(
+                          l10n.studentCode,
+                          style: AppTheme.tajawal(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: AppTheme.gray700,
+                          ),
+                          textAlign: isRtl ? TextAlign.right : TextAlign.left,
+                        ),
+                        const SizedBox(height: 8),
+                        TextFormField(
+                          controller: _studentCodeController,
+                          keyboardType: TextInputType.number,
+                          textDirection: TextDirection.ltr,
+                          onChanged: (_) => _validateForm(),
+                          decoration: InputDecoration(
+                            hintText: l10n.enterStudentCode,
+                            hintStyle: AppTheme.tajawal(
+                              color: AppTheme.textGray,
+                            ),
+                            prefixIcon: const Icon(
+                              Icons.badge_outlined,
+                              color: AppTheme.textGray,
+                            ),
+                            filled: true,
+                            fillColor: Colors.white,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide: const BorderSide(
+                                color: AppTheme.borderGray,
+                                width: 2,
+                              ),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide: const BorderSide(
+                                color: AppTheme.borderGray,
+                                width: 2,
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide: const BorderSide(
+                                color: AppTheme.primaryBlue,
+                                width: 2,
+                              ),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 16,
+                            ),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return l10n.pleaseEnterStudentCode;
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 20),
+                        // Login Button
+                        SizedBox(
+                          height: 50,
+                          child: ElevatedButton(
+                            onPressed:
+                                (_isButtonEnabled && !_isLoading)
+                                    ? _handleLogin
+                                    : null,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                                  (_isButtonEnabled && !_isLoading)
+                                      ? AppTheme.primaryBlue
+                                      : AppTheme.gray300,
+                              foregroundColor: AppTheme.white,
+                              disabledBackgroundColor: AppTheme.gray300,
+                              disabledForegroundColor: AppTheme.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              elevation: 0,
+                            ),
+                            child:
+                                _isLoading
+                                    ? SizedBox(
+                                      height: 20,
+                                      width: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
+                                              AppTheme.white,
+                                            ),
+                                      ),
+                                    )
+                                    : Text(
+                                      l10n.login,
+                                      style: AppTheme.tajawal(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        // Bottom Text
+                        Text(
+                          l10n.registerHint,
+                          style: AppTheme.tajawal(
+                            fontSize: 12,
+                            fontWeight: FontWeight.normal,
+                            color: AppTheme.gray400,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),

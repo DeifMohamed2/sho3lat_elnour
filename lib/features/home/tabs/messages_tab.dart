@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/localization/app_localizations.dart';
 
 class MessagesTab extends StatefulWidget {
   final Map<String, dynamic>? student;
@@ -100,9 +101,8 @@ class _MessagesTabState extends State<MessagesTab> {
 
   @override
   Widget build(BuildContext context) {
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: RefreshIndicator(
+    final l10n = AppLocalizations.of(context);
+    return RefreshIndicator(
         onRefresh: widget.onRefresh ?? () async {},
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
@@ -135,7 +135,7 @@ class _MessagesTabState extends State<MessagesTab> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Text(
-                        'الرسائل',
+                        l10n.messages,
                         style: AppTheme.tajawal(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
@@ -150,7 +150,7 @@ class _MessagesTabState extends State<MessagesTab> {
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
-                            '${_messages.where((m) => m['unread'] == true).length} جديدة',
+                            '${_messages.where((m) => m['unread'] == true).length} ${l10n.newMessages}',
                             style: AppTheme.tajawal(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
@@ -168,11 +168,11 @@ class _MessagesTabState extends State<MessagesTab> {
                     scrollDirection: Axis.horizontal,
                     child: Row(
                       children: [
-                        _buildFilterButton('all', 'الكل (${_messages.length})'),
+                        _buildFilterButton('all', '${l10n.allFilter} (${_messages.length})', l10n),
                         const SizedBox(width: 8),
-                        _buildFilterButton('school', 'رسائل الإدارة (${_messages.where((m) => m['type'] == 'school').length})'),
+                        _buildFilterButton('school', '${l10n.schoolMessages} (${_messages.where((m) => m['type'] == 'school').length})', l10n),
                         const SizedBox(width: 8),
-                        _buildFilterButton('teacher', 'رسائل المعلمين (${_messages.where((m) => m['type'] == 'teacher').length})'),
+                        _buildFilterButton('teacher', '${l10n.teacherMessages} (${_messages.where((m) => m['type'] == 'teacher').length})', l10n),
                       ],
                     ),
                   ),
@@ -192,12 +192,11 @@ class _MessagesTabState extends State<MessagesTab> {
             const SizedBox(height: 20), // Bottom padding
           ],
         ),
-        ),
       ),
     );
   }
 
-  Widget _buildFilterButton(String filter, String label) {
+  Widget _buildFilterButton(String filter, String label, AppLocalizations l10n) {
     final isSelected = _filter == filter;
     return Material(
       color: Colors.transparent,

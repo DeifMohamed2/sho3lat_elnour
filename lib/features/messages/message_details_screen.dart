@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/localization/app_localizations.dart';
 
 class MessageDetailsScreen extends StatelessWidget {
   final Map<String, dynamic>? message;
@@ -11,18 +12,16 @@ class MessageDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     if (message == null) {
-      return Directionality(
-        textDirection: TextDirection.rtl,
-        child: Scaffold(
-          backgroundColor: AppTheme.backgroundLight,
-          body: Center(
-            child: Text(
-              'لم يتم العثور على الرسالة',
-              style: AppTheme.tajawal(
-                fontSize: 16,
-                color: AppTheme.gray500,
-              ),
+      return Scaffold(
+        backgroundColor: AppTheme.backgroundLight,
+        body: Center(
+          child: Text(
+            l10n.messageNotFound,
+            style: AppTheme.tajawal(
+              fontSize: 16,
+              color: AppTheme.gray500,
             ),
           ),
         ),
@@ -31,11 +30,9 @@ class MessageDetailsScreen extends StatelessWidget {
 
     final isSchool = message!['type'] == 'school';
 
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: Scaffold(
-        backgroundColor: AppTheme.backgroundLight,
-        body: Column(
+    return Scaffold(
+      backgroundColor: AppTheme.backgroundLight,
+      body: Column(
           children: [
             // Header
             Container(
@@ -59,7 +56,7 @@ class MessageDetailsScreen extends StatelessWidget {
                     onPressed: () => Navigator.of(context).pop(),
                   ),
                   Text(
-                    'تفاصيل الرسالة',
+                    l10n.messageDetails,
                     style: AppTheme.tajawal(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -157,7 +154,7 @@ class MessageDetailsScreen extends StatelessWidget {
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
-                                  isSchool ? 'رسالة من المدرسة' : 'رسالة من المعلم',
+                                  isSchool ? l10n.schoolMessage : l10n.teacherMessage,
                                   style: AppTheme.tajawal(
                                     fontSize: 12,
                                     color: isSchool ? Colors.blue.shade700 : Colors.purple.shade700,
@@ -214,7 +211,6 @@ class MessageDetailsScreen extends StatelessWidget {
             ),
           ],
         ),
-      ),
     );
   }
 }

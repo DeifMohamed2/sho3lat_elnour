@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/models/dashboard/notifications_info.dart';
+import '../../core/localization/app_localizations.dart';
 
 class NotificationDetailsScreen extends StatelessWidget {
   final NotificationItem notification;
@@ -67,63 +68,39 @@ class NotificationDetailsScreen extends StatelessWidget {
     }
   }
 
-  String _getTypeLabel() {
+  String _getTypeLabel(AppLocalizations l10n) {
     switch (notification.type) {
       case 'present':
-        return 'حضور';
+        return l10n.present;
       case 'absent':
-        return 'غياب';
+        return l10n.absent;
       case 'late':
-        return 'تأخير';
+        return l10n.late;
       case 'checkout':
-        return 'انصراف';
+        return l10n.departure;
       case 'announcement':
-        return 'إعلان';
+        return l10n.announcement;
       case 'message':
-        return 'رسالة';
+        return l10n.message;
       default:
-        return 'إشعار';
+        return l10n.notification;
     }
   }
 
-  String _formatFullDate(DateTime date) {
-    final monthNames = [
-      '',
-      'يناير',
-      'فبراير',
-      'مارس',
-      'أبريل',
-      'مايو',
-      'يونيو',
-      'يوليو',
-      'أغسطس',
-      'سبتمبر',
-      'أكتوبر',
-      'نوفمبر',
-      'ديسمبر',
-    ];
-    final dayNames = [
-      'الأحد',
-      'الإثنين',
-      'الثلاثاء',
-      'الأربعاء',
-      'الخميس',
-      'الجمعة',
-      'السبت',
-    ];
-    final dayName = dayNames[date.weekday % 7];
+  String _formatFullDate(DateTime date, AppLocalizations l10n) {
+    final dayName = l10n.getDayName(date.weekday);
+    final monthName = l10n.getMonthName(date.month);
     final hour = date.hour > 12 ? date.hour - 12 : (date.hour == 0 ? 12 : date.hour);
-    final period = date.hour >= 12 ? 'م' : 'ص';
+    final period = date.hour >= 12 ? l10n.pm : l10n.am;
     final minute = date.minute.toString().padLeft(2, '0');
     
-    return '$dayName، ${date.day} ${monthNames[date.month]} ${date.year} - $hour:$minute $period';
+    return '$dayName، ${date.day} $monthName ${date.year} - $hour:$minute $period';
   }
 
   @override
   Widget build(BuildContext context) {
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: Scaffold(
+    final l10n = AppLocalizations.of(context);
+    return Scaffold(
         backgroundColor: AppTheme.backgroundLight,
         appBar: AppBar(
           leading: IconButton(
@@ -131,7 +108,7 @@ class NotificationDetailsScreen extends StatelessWidget {
             onPressed: () => Navigator.of(context).pop(),
           ),
           title: Text(
-            'تفاصيل الإشعار',
+            l10n.notificationDetails,
             style: AppTheme.tajawal(
               fontSize: 20,
               fontWeight: FontWeight.bold,
@@ -203,7 +180,7 @@ class NotificationDetailsScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
-                        _getTypeLabel(),
+                        _getTypeLabel(l10n),
                         style: AppTheme.tajawal(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
@@ -253,7 +230,7 @@ class NotificationDetailsScreen extends StatelessWidget {
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          'التفاصيل',
+                          l10n.details,
                           style: AppTheme.tajawal(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
@@ -302,7 +279,7 @@ class NotificationDetailsScreen extends StatelessWidget {
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          'التوقيت',
+                          l10n.timing,
                           style: AppTheme.tajawal(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
@@ -314,16 +291,16 @@ class NotificationDetailsScreen extends StatelessWidget {
                     const SizedBox(height: 16),
                     // Created Date
                     _buildDateRow(
-                      label: 'تاريخ الإرسال',
-                      value: _formatFullDate(notification.createdAt),
+                      label: l10n.sentDate,
+                      value: _formatFullDate(notification.createdAt, l10n),
                     ),
                     if (notification.readAt != null) ...[
                       const SizedBox(height: 12),
                       const Divider(height: 1),
                       const SizedBox(height: 12),
                       _buildDateRow(
-                        label: 'تاريخ القراءة',
-                        value: _formatFullDate(notification.readAt!),
+                        label: l10n.readDate,
+                        value: _formatFullDate(notification.readAt!, l10n),
                       ),
                     ],
                   ],
@@ -368,7 +345,7 @@ class NotificationDetailsScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'الحالة',
+                            l10n.status,
                             style: AppTheme.tajawal(
                               fontSize: 12,
                               color: AppTheme.gray500,
@@ -376,7 +353,7 @@ class NotificationDetailsScreen extends StatelessWidget {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            notification.isRead ? 'تم القراءة' : 'غير مقروء',
+                            notification.isRead ? l10n.read : l10n.unread,
                             style: AppTheme.tajawal(
                               fontSize: 15,
                               fontWeight: FontWeight.w600,
@@ -392,7 +369,7 @@ class NotificationDetailsScreen extends StatelessWidget {
             ],
           ),
         ),
-      ),
+
     );
   }
 

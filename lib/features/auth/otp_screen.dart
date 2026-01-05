@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/localization/app_localizations.dart';
 
 class OtpScreen extends StatefulWidget {
   const OtpScreen({super.key});
@@ -65,11 +66,10 @@ class _OtpScreenState extends State<OtpScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: Scaffold(
-        backgroundColor: AppTheme.backgroundLight,
-        body: SafeArea(
+    final l10n = AppLocalizations.of(context);
+    return Scaffold(
+      backgroundColor: AppTheme.backgroundLight,
+      body: SafeArea(
           child: Padding(
             padding: const EdgeInsets.all(24.0),
             child: Column(
@@ -91,7 +91,7 @@ class _OtpScreenState extends State<OtpScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                       Text(
-                        'التحقق من الرمز',
+                        l10n.verifyCode,
                         style: AppTheme.tajawal(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
@@ -100,7 +100,7 @@ class _OtpScreenState extends State<OtpScreen> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'تم إرسال رمز التحقق إلى رقم الجوال',
+                        l10n.otpSentTo,
                         style: AppTheme.tajawal(
                           fontSize: 14,
                           color: AppTheme.gray500,
@@ -193,7 +193,7 @@ class _OtpScreenState extends State<OtpScreen> {
                       // Resend Timer
                       if (_timer > 0)
                         Text(
-                          'إعادة إرسال الرمز بعد $_timer ثانية',
+                          '${l10n.resendCodeAfter} $_timer ${l10n.seconds}',
                           style: AppTheme.tajawal(
                             fontSize: 14,
                             color: AppTheme.gray500,
@@ -210,7 +210,7 @@ class _OtpScreenState extends State<OtpScreen> {
                           },
                           icon: const Icon(Icons.refresh, size: 16),
                           label: Text(
-                            'إعادة إرسال الرمز',
+                            l10n.resendCode,
                             style: AppTheme.tajawal(
                               fontSize: 14,
                               color: AppTheme.primaryBlue,
@@ -235,7 +235,7 @@ class _OtpScreenState extends State<OtpScreen> {
                             elevation: 4,
                           ),
                           child: Text(
-                            'تحقق',
+                            l10n.verify,
                             style: AppTheme.tajawal(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
@@ -251,7 +251,6 @@ class _OtpScreenState extends State<OtpScreen> {
             ),
           ),
         ),
-      ),
     );
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/localization/app_localizations.dart';
 
 class SelectStudentScreen extends StatefulWidget {
   const SelectStudentScreen({super.key});
@@ -32,18 +33,17 @@ class _SelectStudentScreenState extends State<SelectStudentScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: Scaffold(
-        backgroundColor: AppTheme.backgroundLight,
-        body: SafeArea(
+    final l10n = AppLocalizations.of(context);
+    return Scaffold(
+      backgroundColor: AppTheme.backgroundLight,
+      body: SafeArea(
           child: Padding(
             padding: const EdgeInsets.all(24.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text(
-                  'اختر الطالب',
+                  l10n.selectStudent,
                   style: AppTheme.tajawal(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
@@ -52,7 +52,7 @@ class _SelectStudentScreenState extends State<SelectStudentScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'اختر من قائمة أبنائك لمتابعة أدائهم الدراسي',
+                  l10n.selectStudentSubtitle,
                   style: AppTheme.tajawal(
                     fontSize: 14,
                     color: AppTheme.gray500,
@@ -165,7 +165,7 @@ class _SelectStudentScreenState extends State<SelectStudentScreen> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'يمكنك التبديل بين الطلاب في أي وقت من الملف الشخصي',
+                  l10n.switchStudentHint,
                   style: AppTheme.tajawal(
                     fontSize: 12,
                     color: AppTheme.gray400,
@@ -176,7 +176,6 @@ class _SelectStudentScreenState extends State<SelectStudentScreen> {
             ),
           ),
         ),
-      ),
     );
   }
 }

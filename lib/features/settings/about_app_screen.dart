@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/localization/app_localizations.dart';
 
 class AboutAppScreen extends StatelessWidget {
   const AboutAppScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: Scaffold(
+    final l10n = AppLocalizations.of(context);
+    return Scaffold(
         backgroundColor: AppTheme.backgroundLight,
         appBar: AppBar(
           leading: IconButton(
@@ -16,7 +16,7 @@ class AboutAppScreen extends StatelessWidget {
             onPressed: () => Navigator.of(context).pop(),
           ),
           title: Text(
-            'حول التطبيق',
+            l10n.aboutApp,
             style: AppTheme.tajawal(
               fontSize: 20,
               fontWeight: FontWeight.bold,
@@ -91,7 +91,7 @@ class AboutAppScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'مدارس شعلة النور',
+                      l10n.appTitle,
                       style: AppTheme.tajawal(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
@@ -100,7 +100,7 @@ class AboutAppScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'تطبيق أولياء الأمور',
+                      l10n.parentApp,
                       style: AppTheme.tajawal(
                         fontSize: 14,
                         color: AppTheme.gray500,
@@ -128,7 +128,7 @@ class AboutAppScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'معلومات التطبيق',
+                      l10n.appInfo,
                       style: AppTheme.tajawal(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -138,21 +138,21 @@ class AboutAppScreen extends StatelessWidget {
                     const SizedBox(height: 20),
                     _buildInfoRow(
                       icon: Icons.info_outline,
-                      label: 'الإصدار',
-                      value: '1.0.0',
+                      label: l10n.version,
+                      value: l10n.versionNumber,
                       iconColor: AppTheme.primaryBlue,
                     ),
                     const SizedBox(height: 16),
                     _buildInfoRow(
                       icon: Icons.calendar_today,
-                      label: 'تاريخ الإصدار',
-                      value: 'ديسمبر 2025',
+                      label: l10n.releaseDate,
+                      value: l10n.releaseDateValue,
                       iconColor: Colors.green,
                     ),
                     const SizedBox(height: 16),
                     _buildInfoRow(
                       icon: Icons.email,
-                      label: 'البريد الإلكتروني',
+                      label: l10n.email,
                       value: 'support@madrasty.com',
                       iconColor: Colors.purple,
                     ),
@@ -182,7 +182,7 @@ class AboutAppScreen extends StatelessWidget {
                         const Icon(Icons.description, color: AppTheme.primaryBlue, size: 20),
                         const SizedBox(width: 8),
                         Text(
-                          'عن التطبيق',
+                          l10n.aboutSection,
                           style: AppTheme.tajawal(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -193,7 +193,7 @@ class AboutAppScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      'تطبيق "مدارس شعلة النور" هو تطبيق متكامل لأولياء الأمور لمتابعة أداء أبنائهم الدراسي. يتيح التطبيق متابعة الحضور والغياب، الاطلاع على الجدول الدراسي، استلام الرسائل من المدرسة والمعلمين، ومتابعة الدرجات والشهادات.',
+                      l10n.aboutDescription,
                       style: AppTheme.tajawal(
                         fontSize: 14,
                         color: AppTheme.gray700,
@@ -207,7 +207,7 @@ class AboutAppScreen extends StatelessWidget {
             ],
           ),
         ),
-      ),
+
     );
   }
 

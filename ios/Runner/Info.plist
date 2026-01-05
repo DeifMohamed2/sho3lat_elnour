@@ -50,5 +50,12 @@
 		<key>NSAllowsArbitraryLoads</key>
 		<true/>
 	</dict>
+	<!-- Photo Library permissions for downloading timetable -->
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>نحتاج إلى إذن لحفظ الجدول الدراسي في معرض الصور / We need permission to save your timetable to your photo library</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>نحتاج إلى الوصول لمعرض الصور لحفظ الجدول الدراسي / We need access to your photo library to save the timetable</string>
+	<key>PHPhotoLibraryPreventAutomaticLimitedAccessAlert</key>
+	<true/>
 </dict>
 </plist>

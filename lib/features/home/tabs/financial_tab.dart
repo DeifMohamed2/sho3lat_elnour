@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/models/dashboard/dashboard_response.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../widgets/tab_header.dart';
 
 class FinancialTab extends StatefulWidget {
@@ -28,6 +29,7 @@ class FinancialTab extends StatefulWidget {
 class _FinancialTabState extends State<FinancialTab> {
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final financial = widget.dashboardResponse?.financial;
     final payments = widget.dashboardResponse?.payments;
 
@@ -54,10 +56,10 @@ class _FinancialTabState extends State<FinancialTab> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Summary Cards
-                  _buildSummaryCards(financial, payments),
+                  _buildSummaryCards(financial, payments, l10n),
                   const SizedBox(height: 24),
                   // Payments Table
-                  _buildPaymentsSection(payments),
+                  _buildPaymentsSection(payments, l10n),
                 ],
               ),
             ),
@@ -67,7 +69,11 @@ class _FinancialTabState extends State<FinancialTab> {
     );
   }
 
-  Widget _buildSummaryCards(dynamic financial, dynamic payments) {
+  Widget _buildSummaryCards(
+    dynamic financial,
+    dynamic payments,
+    AppLocalizations l10n,
+  ) {
     final totalFees = financial?.totalSchoolFees ?? 0.0;
     final totalPaid = financial?.totalPaid ?? 0.0;
     final remaining = financial?.remainingBalance ?? 0.0;
@@ -82,8 +88,8 @@ class _FinancialTabState extends State<FinancialTab> {
                 icon: Icons.account_balance,
                 iconColor: AppTheme.primaryBlue,
                 iconBgColor: AppTheme.primaryBlue.withValues(alpha: 0.15),
-                label: 'اجمالي المصروفات',
-                value: '${totalFees.toStringAsFixed(2)} ج.م',
+                label: l10n.totalFees,
+                value: '${totalFees.toStringAsFixed(2)} ${l10n.currency}',
                 valueColor: Colors.red,
               ),
             ),
@@ -93,8 +99,8 @@ class _FinancialTabState extends State<FinancialTab> {
                 icon: Icons.check_circle,
                 iconColor: Colors.green,
                 iconBgColor: Colors.green.shade100,
-                label: 'المدفوع',
-                value: '${totalPaid.toStringAsFixed(2)} ج.م',
+                label: l10n.paidAmount,
+                value: '${totalPaid.toStringAsFixed(2)} ${l10n.currency}',
                 valueColor: Colors.green,
               ),
             ),
@@ -108,8 +114,8 @@ class _FinancialTabState extends State<FinancialTab> {
                 icon: Icons.pending,
                 iconColor: Colors.red,
                 iconBgColor: Colors.red.shade100,
-                label: 'المتبقي',
-                value: '${remaining.toStringAsFixed(2)} ج.م',
+                label: l10n.remainingBalance,
+                value: '${remaining.toStringAsFixed(2)} ${l10n.currency}',
                 valueColor: Colors.red,
               ),
             ),
@@ -119,7 +125,7 @@ class _FinancialTabState extends State<FinancialTab> {
                 icon: Icons.receipt_long,
                 iconColor: Colors.orange,
                 iconBgColor: Colors.orange.shade100,
-                label: 'عدد المدفوعات',
+                label: l10n.paymentCount,
                 value: '$paymentCount',
                 valueColor: AppTheme.gray800,
               ),
@@ -163,11 +169,7 @@ class _FinancialTabState extends State<FinancialTab> {
                   color: iconBgColor,
                   shape: BoxShape.circle,
                 ),
-                child: Icon(
-                  icon,
-                  color: iconColor,
-                  size: 16,
-                ),
+                child: Icon(icon, color: iconColor, size: 16),
               ),
               const SizedBox(width: 8),
               Expanded(
@@ -196,7 +198,7 @@ class _FinancialTabState extends State<FinancialTab> {
     );
   }
 
-  Widget _buildPaymentsSection(dynamic payments) {
+  Widget _buildPaymentsSection(dynamic payments, AppLocalizations l10n) {
     final allPayments = payments?.all ?? [];
 
     return Column(
@@ -220,7 +222,7 @@ class _FinancialTabState extends State<FinancialTab> {
             ),
             const SizedBox(width: 12),
             Text(
-              'سجل المدفوعات',
+              l10n.paymentHistory,
               style: AppTheme.tajawal(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -255,7 +257,7 @@ class _FinancialTabState extends State<FinancialTab> {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  'لا توجد مدفوعات',
+                  l10n.noPayments,
                   style: AppTheme.tajawal(
                     fontSize: 14,
                     color: AppTheme.gray500,
@@ -272,16 +274,28 @@ class _FinancialTabState extends State<FinancialTab> {
             separatorBuilder: (context, index) => const SizedBox(height: 12),
             itemBuilder: (context, index) {
               final payment = allPayments[index];
-              return _buildPaymentCard(index + 1, payment);
+              return _buildPaymentCard(index + 1, payment, l10n);
             },
           ),
       ],
     );
   }
 
-  Widget _buildPaymentCard(int index, dynamic payment) {
-    final methodColor = _getPaymentMethodColor(payment.paymentMethod);
+  Widget _buildPaymentCard(int index, dynamic payment, AppLocalizations l10n) {
+    // Debug prints
+    print('========== PAYMENT CARD DEBUG ==========');
+    print('Payment Index: $index');
+    print('Payment Object: $payment');
+    print('Payment Type: ${payment.runtimeType}');
+    print('Payment Amount: ${payment.amount}');
+    print('Payment Date: ${payment.paymentDate}');
+    print('Payment Method: ${payment.paymentMethod}');
+    print('Payment Method Arabic: ${payment.paymentMethodArabic}');
+    print('Formatted Date: ${payment.formattedPaymentDate}');
+    print('========================================');
     
+    final methodColor = _getPaymentMethodColor(payment.paymentMethod);
+
     return Container(
       decoration: BoxDecoration(
         color: AppTheme.white,
@@ -310,50 +324,57 @@ class _FinancialTabState extends State<FinancialTab> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 36,
-                      height: 36,
-                      decoration: BoxDecoration(
-                        color: Colors.green.withValues(alpha: 0.1),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Center(
-                        child: Text(
-                          '$index',
-                          style: AppTheme.tajawal(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.green,
+                Expanded(
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
+                          color: Colors.green.withValues(alpha: 0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Center(
+                          child: Text(
+                            '$index',
+                            style: AppTheme.tajawal(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.green,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'دفعة رقم $index',
-                          style: AppTheme.tajawal(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: AppTheme.gray800,
-                          ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              l10n.paymentNumber(index),
+                              style: AppTheme.tajawal(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: AppTheme.gray800,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              payment.getLocalizedFormattedDate(context),
+                              style: AppTheme.tajawal(
+                                fontSize: 12,
+                                color: AppTheme.gray500,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 2),
-                        Text(
-                          payment.formattedPaymentDate,
-                          style: AppTheme.tajawal(
-                            fontSize: 12,
-                            color: AppTheme.gray500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+                      ),
+                    ],
+                  ),
                 ),
+                const SizedBox(width: 12),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
@@ -366,7 +387,7 @@ class _FinancialTabState extends State<FinancialTab> {
                       ),
                     ),
                     Text(
-                      'ج.م',
+                      l10n.currency,
                       style: AppTheme.tajawal(
                         fontSize: 12,
                         color: AppTheme.gray500,
@@ -384,14 +405,17 @@ class _FinancialTabState extends State<FinancialTab> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'طريقة الدفع',
+                  l10n.paymentMethod,
                   style: AppTheme.tajawal(
                     fontSize: 13,
                     color: AppTheme.gray500,
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: methodColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(20),
@@ -406,7 +430,7 @@ class _FinancialTabState extends State<FinancialTab> {
                       ),
                       const SizedBox(width: 6),
                       Text(
-                        payment.paymentMethodArabic,
+                        payment.getLocalizedPaymentMethod(context),
                         style: AppTheme.tajawal(
                           fontSize: 13,
                           fontWeight: FontWeight.w500,

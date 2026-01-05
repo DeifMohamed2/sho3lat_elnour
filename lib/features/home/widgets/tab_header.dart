@@ -26,10 +26,7 @@ class TabHeader extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [
-            AppTheme.primaryBlue,
-            AppTheme.primaryBlueDark,
-          ],
+          colors: [AppTheme.primaryBlue, AppTheme.primaryBlueDark],
         ),
         borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(32),
@@ -84,7 +81,10 @@ class TabHeader extends StatelessWidget {
               Row(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.person_outline, color: AppTheme.white),
+                    icon: const Icon(
+                      Icons.person_outline,
+                      color: AppTheme.white,
+                    ),
                     onPressed: onProfileTap,
                     style: IconButton.styleFrom(
                       backgroundColor: Colors.white.withOpacity(0.2),
@@ -94,8 +94,10 @@ class TabHeader extends StatelessWidget {
                   Stack(
                     children: [
                       IconButton(
-                        icon: const Icon(Icons.notifications_outlined,
-                            color: AppTheme.white),
+                        icon: const Icon(
+                          Icons.notifications_outlined,
+                          color: AppTheme.white,
+                        ),
                         onPressed: onNotificationTap,
                         style: IconButton.styleFrom(
                           backgroundColor: Colors.white.withOpacity(0.2),
@@ -114,7 +116,9 @@ class TabHeader extends StatelessWidget {
                             ),
                             child: Center(
                               child: Text(
-                                unreadNotificationsCount > 9 ? '9+' : '$unreadNotificationsCount',
+                                unreadNotificationsCount > 9
+                                    ? '9+'
+                                    : '$unreadNotificationsCount',
                                 style: AppTheme.tajawal(
                                   fontSize: 10,
                                   color: AppTheme.white,
@@ -200,4 +204,3 @@ class TabHeader extends StatelessWidget {
     );
   }
 }
-
